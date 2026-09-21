@@ -261,7 +261,7 @@ sequenceDiagram
 2. **Guard rails.** Under a database lock (so concurrent visitors cannot slip past the caps), the server checks the [limits](#demo-limits) and refuses politely if they are reached.
 3. **Your own sandbox.** It creates an anonymous user and a private workspace named *DraftWise demo*. You act as an **admin inside that workspace only**; the demo cannot reach any real workspace.
 4. **Your own copy of the data.** It seeds all 520 emails and 250 attachment records, rule-based classifications for the emails the rules can decide (the rest stay unclassified until you ask for AI), email-safety assessments and their spam / phishing alerts, and an amendment case for each comparison email that has documents. The attachment *bytes* are not copied into Storage; they are read on demand from the sample bundle embedded in the backend.
-5. **Background reading, rules only.** The worker reads and compares every comparison email's documents **without calling any AI provider**. The inbox appears immediately and fills in as the worker goes: rows marked *needs review — documents not read yet* turn into *Checked* or *Mismatch found*. The worker serves the newest demo session first, in inbox order, so `email_001` is among the first to be read; a progress banner on the Overview and Inbox shows how many emails have been read. Small plain-text documents are parsed in-process (PDF and Office files keep the isolated, time-limited parser process), which removed about 2.4 seconds of parser start-up from every plain-text extraction job on our development machine. Total time still depends on how close the worker is to the database.
+5. **Background reading, rules only.** The worker reads and compares every comparison email's documents **without calling any AI provider**. The inbox appears immediately and fills in as the worker goes: rows marked *needs review — documents not read yet* turn into *Checked* or *Mismatch found*. The worker serves the newest demo session first, in inbox order, so `email_001` is among the first to be read, and anything you ask for with a button (such as **Review with AI**) goes ahead of the bulk reading; a progress banner on the Overview and Inbox shows how many emails have been read. Small plain-text documents are parsed in-process (PDF and Office files keep the isolated, time-limited parser process), which removed about 2.4 seconds of parser start-up from every plain-text extraction job on our development machine. Total time still depends on how close the worker is to the database.
 6. **Your session cookie.** A random token is generated, only its **SHA-256 hash** is stored, and the browser receives it as an `HttpOnly` cookie named `draftwise_demo`, scoped to `/api/v1`, valid for 8 hours. Over HTTPS from another site it is `SameSite=None; Secure`; on local HTTP it stays `Lax`.
 7. **Same-origin API calls.** In production the website forwards `/api/v1/*` to the Railway backend through its own domain, so the cookie is first-party. That keeps the demo working in Safari, Firefox strict mode and private windows, which block third-party cookies.
 8. **Every request is checked.** Each call carries the cookie, the `X-Demo-Mode: true` header and your workspace ID; the server confirms the session is unexpired and that the workspace is yours.
@@ -527,7 +527,7 @@ NEXT_PUBLIC_API_URL=https://draftwise-production.up.railway.app
 | Check | Result |
 |---|---|
 | Backend unit tests | **241 passed** |
-| Backend PostgreSQL integration tests (isolated local database) | **63 passed** — 304 in the full backend suite, in about 92 seconds |
+| Backend PostgreSQL integration tests (isolated local database) | **64 passed** — 305 in the full backend suite, in about 64 seconds |
 | Browser tests (Playwright, including axe accessibility checks) | **51 passed** |
 | TypeScript type check · ruff lint | clean · clean |
 | Repository validator (spec artifacts, schema examples, SQL inventory) | pass |
@@ -588,7 +588,7 @@ The use case asks for a system that starts from an inbox, decides which emails n
 | **End-to-end functionality** | Live demo: open a sample email → documents linked → seven-field comparison → correction preview → returned draft analysis. Backed by an API + worker + database journey test. |
 | **Architecture & scalability** | Typed service boundaries, durable `processing_jobs` with `SKIP LOCKED` leasing and fencing, tenant isolation with Row Level Security. See [System Architecture](#system-architecture). |
 | **Technology integration** | Next.js ↔ FastAPI ↔ Supabase (Auth, Storage, PostgreSQL) ↔ Gemini / Morpheus, plus Tesseract OCR, all connected and deployed. |
-| **Engineering quality & robustness** | 241 backend unit tests, 63 PostgreSQL integration tests, 51 Playwright browser tests with axe accessibility checks, ruff, and a CI workflow on every push (see the Project Status note on the Linux fix). See [Benchmark & Validation Results](#benchmark--validation-results). |
+| **Engineering quality & robustness** | 241 backend unit tests, 64 PostgreSQL integration tests, 51 Playwright browser tests with axe accessibility checks, ruff, and a CI workflow on every push (see the Project Status note on the Linux fix). See [Benchmark & Validation Results](#benchmark--validation-results). |
 | **Solution effectiveness & value** | The amendment cycle: regression detection, exact-scope correction previews, one-question-at-a-time next actions. See [Signature Workflows](#signature-workflows). |
 | **User experience & differentiation** | Attention-first inbox, evidence viewer, explainable states, page-aware assistant, keyboard-accessible tooltips, mobile layouts verified at 390 / 768 / 1440 px. |
 | **Impact & future potential** | [docs/IMPACT_AND_ROLLOUT.md](docs/IMPACT_AND_ROLLOUT.md): eight success measures with definitions, data sources and pilot targets (targets, not results), a shadow-mode then assisted-mode rollout with go / no-go gates, and risks. Plus approved equivalence memory (scoped per customer), drift monitoring against a reviewed baseline, Gmail connection and workspace-level AI budgets. |
@@ -1070,7 +1070,7 @@ Rules alone did **not** generalise: they abstained on about half the held-out em
 | Suite | Scope | Command |
 |---|---|---|
 | Backend unit | 241 tests: verifier, parsers, grounding, classification, email state, rules, previews, revision analysis … | `uv run pytest tests/unit -q` |
-| Backend integration | 63 tests against real PostgreSQL: tenant isolation, concurrency, lease recovery, worker restart, amendment journey, storage cleanup | `node tools/postgres/run-tests.mjs` |
+| Backend integration | 64 tests against real PostgreSQL: tenant isolation, concurrency, lease recovery, worker restart, amendment journey, storage cleanup | `node tools/postgres/run-tests.mjs` |
 | Browser | 51 Playwright tests with axe accessibility checks: inbox, dashboard, amendment regression, field review, public pages, layouts | `pnpm test:e2e` |
 | Repository | File inventory, Markdown links, JSON syntax, schema examples, SQL inventory | `python scripts/validate_repository.py` |
 

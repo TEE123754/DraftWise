@@ -48,6 +48,22 @@ async def test_within_a_workspace_comparisons_finish_before_new_reading_starts(d
         assert await claim_all(connection, 3) == ["compare-1", "read-1", "read-2"]
 
 
+async def test_a_click_is_answered_before_the_bulk_reading_of_the_mailbox(database, workspace_factory):
+    context = await workspace_factory()
+    async with database.connection() as connection:
+        for name in ("bulk-1", "bulk-2"):  # seeded first, so oldest
+            await enqueue(
+                connection, workspace_id=context["workspace"], kind="extract", key=name,
+                payload={"offline": True, "key": name},
+            )
+        await add_job(connection, context, "clicked", kind="classify")  # queued last
+        await enqueue(
+            connection, workspace_id=context["workspace"], kind="verify", key="compare",
+            payload={"offline": True},
+        )
+        assert await claim_all(connection, 4) == ["compare", "clicked", "bulk-1", "bulk-2"]
+
+
 async def test_a_mailbox_is_read_in_inbox_order(database, workspace_factory):
     context = await workspace_factory()
     workspace = context["workspace"]

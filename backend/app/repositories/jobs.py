@@ -47,12 +47,15 @@ async def enqueue(
 async def claim(connection):
     # Real workspaces come first, then demo sessions newest-first: the visitor who has just opened
     # the demo is waiting on this queue, while an older session's backlog can afford to wait.
-    # Within a workspace, comparisons (verify) finish before new reading starts, then oldest first.
+    # Within a workspace, comparisons (verify) finish before new reading starts, work a person
+    # asked for by clicking comes before the bulk reading of a whole mailbox (payload "offline"),
+    # then oldest first.
     cursor = await connection.execute("""with candidate as (
         select j.id from public.processing_jobs j
         left join public.demo_sessions d on d.workspace_id=j.workspace_id
         where j.state in ('queued','retry_wait') and j.available_at<=now() and j.attempt<j.max_attempts
-        order by d.created_at desc nulls first,(j.kind <> 'verify'),j.available_at,j.created_at
+        order by d.created_at desc nulls first,(j.kind <> 'verify'),
+          coalesce((j.payload->>'offline')::boolean,false),j.available_at,j.created_at
         for update of j skip locked limit 1)
         update public.processing_jobs j set state='running',attempt=attempt+1,lease_token=gen_random_uuid(),
         leased_until=now()+interval '90 seconds',updated_at=now() from candidate c where j.id=c.id returning j.*""")
@@ -67,7 +70,7 @@ async def promote(connection, workspace_id: UUID, job_id: UUID):
     """
     await connection.execute(
         """update public.processing_jobs set available_at=least(available_at,now()-interval '1 day'),
-        created_at=least(created_at,now()-interval '1 day'),updated_at=now()
+        created_at=least(created_at,now()-interval '1 day'),payload=payload-'offline',updated_at=now()
         where workspace_id=%s and id=%s and state='queued'""",
         (workspace_id, job_id),
     )
