@@ -73,8 +73,18 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def resolve_dataset_path(self):
         if self.demo_dataset_path:
-            path = Path(self.demo_dataset_path).expanduser()
-            self.demo_dataset_path = str((path if path.is_absolute() else _BACKEND_DIR / path).resolve())
+            p = Path(self.demo_dataset_path).expanduser()
+            resolved = (p if p.is_absolute() else _BACKEND_DIR / p).resolve()
+            if not resolved.is_file():
+                fallback = _BACKEND_DIR / "data" / resolved.name
+                if fallback.is_file():
+                    self.demo_dataset_path = str(fallback.resolve())
+                    return self
+            self.demo_dataset_path = str(resolved)
+        else:
+            fallback = _BACKEND_DIR / "data" / "sdoc-hackathon-bundle.zip"
+            if fallback.is_file():
+                self.demo_dataset_path = str(fallback.resolve())
         return self
 
     @model_validator(mode="after")

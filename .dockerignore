@@ -12,5 +12,6 @@ artifacts
 **/test-results
 **/ground_truth*.json
 *.zip
+!backend/data/*.zip
 *.pdf
 *.docx
