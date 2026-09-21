@@ -25,8 +25,8 @@ FREE_ONLY=true
 XAI_API_KEY=
 XAI_MODEL=
 ALLOWED_ORIGINS=https://frontend.example
-WORKER_ENABLED=true
-WORKER_CONCURRENCY=1
+RUN_WORKER=true
+WORKER_CONCURRENCY=3
 PROVIDER_CONCURRENCY=2
 MAX_UPLOAD_BYTES=20971520
 MAX_PDF_PAGES=20
@@ -48,7 +48,7 @@ These values are examples, not working credentials or deployment claims. Configu
 
 **Vercel:** project root `frontend/`; use native Next.js build output and committed lockfile; no Vite SPA rewrite. Configure public API URL and Supabase publishable settings per environment. Protect preview deployments containing private data, register explicit callback URLs, and avoid wildcard CORS for all preview origins. Keep extraction/OCR and long jobs off Vercel request functions.
 
-**Railway:** build the monorepo Dockerfile with Python runtime, pinned Python dependencies and only needed OCR language packs. Run as a non-root user with a writable temporary directory. Start with a shell-expanded command `uvicorn app.main:app --host 0.0.0.0 --port "$PORT" --workers 1`. The container working directory must be `backend/`. One worker loop is created in lifespan; do not use multiple Uvicorn workers with an unbounded loop per process. Health path `/api/v1/health`; readiness path `/api/v1/ready`; graceful SIGTERM and bounded restart policy. Database migrations run once as a deployment operation before traffic, never concurrently in each worker.
+**Railway:** build the monorepo Dockerfile with Python runtime, pinned Python dependencies and only needed OCR language packs. Run as a non-root user with a writable temporary directory. Start with a shell-expanded command `uvicorn app.main:app --host 0.0.0.0 --port "$PORT" --workers 1`. The container working directory must be `backend/`. The image runs one Uvicorn process plus one supervised worker process (`python -m app.workers.runner`, restarted if it exits; `RUN_WORKER=false` turns it off when the worker is deployed as its own service). Do not use multiple Uvicorn workers. Health path `/api/v1/health`; readiness path `/api/v1/ready`; graceful SIGTERM and bounded restart policy. Database migrations run once as a deployment operation before traffic, never concurrently in each worker.
 
 **Supabase:** apply SQL migrations with a migration-owner connection; create private buckets; configure allowed auth redirect origins; create first workspace/admin through an authenticated bootstrap script; disable open public signup if not needed. Use TLS and an appropriate regional endpoint close to Railway. Back up data independently within the prototype's allowed resources; do not assume free-tier managed backup/recovery guarantees. Test restore on a local project before claiming production readiness.
 

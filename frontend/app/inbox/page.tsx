@@ -13,6 +13,7 @@ import { useAuth } from "@/components/auth-provider";
 import { EmailPreview, type PreviewEmail } from "@/components/inbox/email-preview";
 import { EmailRow } from "@/components/inbox/email-row";
 import { FilterBar } from "@/components/inbox/filter-bar";
+import { ReadingProgress } from "@/components/reading-progress";
 
 const PAGE = 25;
 const MAX_RELOAD = 100;
@@ -324,6 +325,9 @@ export default function Inbox() {
           {adding ? "Close form" : "Add email"}
         </Button>
       </header>
+      <div className="mt-4">
+        <ReadingProgress />
+      </div>
       <SampleFetch />
       {error && (
         <p role="alert" className="mt-5 rounded-lg bg-red-50 p-4 text-sm text-red-800">

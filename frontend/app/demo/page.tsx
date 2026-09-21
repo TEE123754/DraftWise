@@ -129,6 +129,7 @@ export default function DemoPage() {
               "Open email_001 in the Inbox. Read the amendment request and choose Open amendment case.",
               "Select the sample shipping instruction and draft BL after extraction finishes.",
               "Inspect all seven comparison fields with their source evidence, then preview a correction.",
+              "Open any email and choose Review with AI: the model classifies it and reads any field the rules could not, and the result is labelled AI. Each demo session includes a small AI allowance.",
               "Return to the dashboard to see alerts, the review queue, and the Ask DraftWise assistant.",
             ].map((step, i) => (
               <li

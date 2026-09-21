@@ -5,6 +5,7 @@ import { api } from "@/lib/api/client";
 import { useAuth } from "@/components/auth-provider";
 import { StatusBadge } from "@/components/cases/status-badge";
 import { DashboardPanels, type ExtraSummary } from "@/components/dashboard-panels";
+import { ReadingProgress } from "@/components/reading-progress";
 import type { CaseSummary } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
 
@@ -102,6 +103,7 @@ export default function Dashboard() {
           </Link>
         </div>
       </header>
+      <ReadingProgress />
       {error ? (
         <section role="alert" className="alert-error">
           <h2>Workspace summary unavailable</h2>

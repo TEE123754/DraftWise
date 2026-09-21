@@ -65,7 +65,8 @@ In Railway -> **Variables**, add the following environment variables:
 | `GEMINI_MODEL` | `gemini-3.1-flash-lite` |
 | `AI_PROVIDER` | `gemini` (or `morpheus`) |
 | `ALLOWED_ORIGINS` | `https://<your-app>.vercel.app` *(must be HTTPS in production)* |
-| `WORKER_ENABLED` | `true` |
+| `RUN_WORKER` | `true` is the image default and needs no action: the container runs the API and a supervised worker. Set `false` only if the worker runs as its own service. |
+| `WORKER_CONCURRENCY` | *(optional)* Jobs one worker runs at once, 1 to 8, default 3. Each uses about two database connections. |
 | `DEMO_ENABLED` | `true` |
 | `DEMO_MAX_SESSIONS` | `60` *(optional)* Demo sessions that may be alive at once. Each lasts 8 hours and holds its own copy of the sample data, so raise it only as far as your database storage allows. At the limit, new visitors see "Demo capacity reached". |
 | `DEMO_MAX_SESSIONS_PER_HOUR` | `60` *(optional)* Demo sessions that may be started in one hour. |

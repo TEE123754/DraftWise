@@ -261,7 +261,7 @@ sequenceDiagram
 2. **Guard rails.** Under a database lock (so concurrent visitors cannot slip past the caps), the server checks the [limits](#demo-limits) and refuses politely if they are reached.
 3. **Your own sandbox.** It creates an anonymous user and a private workspace named *DraftWise demo*. You act as an **admin inside that workspace only**; the demo cannot reach any real workspace.
 4. **Your own copy of the data.** It seeds all 520 emails and 250 attachment records, rule-based classifications for the emails the rules can decide (the rest stay unclassified until you ask for AI), email-safety assessments and their spam / phishing alerts, and an amendment case for each comparison email that has documents. The attachment *bytes* are not copied into Storage; they are read on demand from the sample bundle embedded in the backend.
-5. **Background reading, rules only.** The worker reads and compares every comparison email's documents **without calling any AI provider**. The inbox appears immediately and fills in as the worker goes: rows marked *needs review — documents not read yet* turn into *Checked* or *Mismatch found*. Reading all 126 comparison emails took about 9 minutes against a remote database in our one measurement.
+5. **Background reading, rules only.** The worker reads and compares every comparison email's documents **without calling any AI provider**. The inbox appears immediately and fills in as the worker goes: rows marked *needs review — documents not read yet* turn into *Checked* or *Mismatch found*. The worker serves the newest demo session first, in inbox order, so `email_001` is among the first to be read; a progress banner on the Overview and Inbox shows how many emails have been read. Small plain-text documents are parsed in-process (PDF and Office files keep the isolated, time-limited parser process), which removed about 2.4 seconds of parser start-up from every plain-text extraction job on our development machine. Total time still depends on how close the worker is to the database.
 6. **Your session cookie.** A random token is generated, only its **SHA-256 hash** is stored, and the browser receives it as an `HttpOnly` cookie named `draftwise_demo`, scoped to `/api/v1`, valid for 8 hours. Over HTTPS from another site it is `SameSite=None; Secure`; on local HTTP it stays `Lax`.
 7. **Same-origin API calls.** In production the website forwards `/api/v1/*` to the Railway backend through its own domain, so the cookie is first-party. That keeps the demo working in Safari, Firefox strict mode and private windows, which block third-party cookies.
 8. **Every request is checked.** Each call carries the cookie, the `X-Demo-Mode: true` header and your workspace ID; the server confirms the session is unexpired and that the workspace is yours.
@@ -461,7 +461,7 @@ You can exercise the comparison logic without Supabase, keys or a browser:
 ```bash
 cd backend
 uv sync --frozen
-uv run pytest tests/unit -q                    # 234 tests, no database needed
+uv run pytest tests/unit -q                    # 241 tests, no database needed
 uv run shipping-verify --si path/to/instructions.txt --bl path/to/draft.txt --output report.json
 ```
 
@@ -510,14 +510,14 @@ NEXT_PUBLIC_API_URL=https://draftwise-production.up.railway.app
 
 ## Project Status
 
-*Last verified on 21 September 2026, at commit [`e3671b0`](https://github.com/TEE123754/DraftWise/commit/e3671b0).*
+*Last verified on 21 September 2026. The checks below were run on the working tree that was then committed as the head of `main`.*
 
 ### What is live
 
 | Component | State |
 |---|---|
 | **Frontend** | Deployed on Vercel at [draft-wise-gold.vercel.app](https://draft-wise-gold.vercel.app/): the "Version B" glass-style redesign, public pages (`/`, `/workflow`, `/pricing`, `/privacy`, `/terms`), the demo and the signed-in workspace. It forwards `/api/v1/*` to the backend through its own origin. |
-| **API** | Deployed on Railway at [draftwise-production.up.railway.app](https://draftwise-production.up.railway.app/health). `/health` returns `ok`, and `/ready` reported the database `ok` and a worker `active` when last checked. |
+| **API** | Deployed on Railway at [draftwise-production.up.railway.app](https://draftwise-production.up.railway.app/health). `/health` returns `ok`. The image now runs the API **and** a supervised worker in one container. Before this update the hosted worker was a process on a developer machine sharing the database, so the hosted demo only worked while that machine was on; `/ready` could not tell the difference. |
 | **Database, Auth, Storage** | Supabase: 33 tables with Row Level Security, numbered migrations through `016`, a private `shipping-originals` bucket, email one-time-code sign-in. |
 | **Demo** | Enabled, running in non-production mode. Limits: 60 live sessions, 60 new sessions per hour, 8-hour sessions, 9 AI calls per session. See [Live Demo: How It Works and Its Limits](#live-demo-how-it-works-and-its-limits). |
 | **AI** | Gemini or Morpheus, chosen by `AI_PROVIDER`. Off by default: rules run first, and AI is cached and budgeted. |
@@ -526,13 +526,14 @@ NEXT_PUBLIC_API_URL=https://draftwise-production.up.railway.app
 
 | Check | Result |
 |---|---|
-| Backend unit tests | **234 passed** |
-| Backend PostgreSQL integration tests (isolated local database) | **58 passed** — 292 in the full backend suite, in about 97 seconds |
-| Browser tests (Playwright, including axe accessibility checks) | **48 passed** |
+| Backend unit tests | **241 passed** |
+| Backend PostgreSQL integration tests (isolated local database) | **63 passed** — 304 in the full backend suite, in about 92 seconds |
+| Browser tests (Playwright, including axe accessibility checks) | **51 passed** |
 | TypeScript type check · ruff lint | clean · clean |
 | Repository validator (spec artifacts, schema examples, SQL inventory) | pass |
-| **Organizer scorer**, 520-email sample, offline (`ai_fallback: false`) | **1.000** — 46 / 46 defects with exact fields, 20 / 20 review cases escalated, 520 emails in 6.7 seconds |
-| Independent 60-email held-out set | Rules only **48 %** (abstains rather than guessing) · with live AI **95 %** *(last measured earlier; no classification, extraction, comparison or parsing code has changed since)* |
+| **Organizer scorer**, 520-email sample, offline (`ai_fallback: false`) | **1.000** — 46 / 46 defects with exact fields, 20 / 20 review cases escalated, 520 emails in 4.4 seconds (re-run after the parser and queue changes below; `organizer-eval-06`) |
+| Independent 60-email held-out set | Rules only **48 %** (abstains rather than guessing) · with live AI **95 %** *(last measured earlier; no classification, extraction or comparison code has changed since. Plain-text parsing now runs in-process; its output is unchanged and covered by the organizer re-run above)* |
+| GitHub Actions, backend job | **Was failing on every push** with a pytest collection error on Linux only: the `pytest_asyncio_loop_factories` hook in `backend/tests/conftest.py` returned `None` off Windows, which pytest-asyncio 1.4 rejects. Fixed in this update. The run after this push is the first proof, so check the badge on the repository rather than this line. |
 
 The 1.000 is a **sample-only** result; read it together with the held-out row and the [Known Limitations](#known-limitations). The hosted site's `/health`, `/ready` and same-origin API proxy were also probed with read-only requests; the full hosted journey was not re-run end to end for this update.
 
@@ -546,10 +547,11 @@ The 1.000 is a **sample-only** result; read it together with the held-out row an
 | [`abc3357`](https://github.com/TEE123754/DraftWise/commit/abc3357) | Demo cookie issued as `SameSite=None; Secure` for an HTTPS site calling another HTTPS site |
 | [`4613e16`](https://github.com/TEE123754/DraftWise/commit/4613e16) | `/api/v1` proxied through the Vercel origin so the demo cookie is first-party (Safari, Firefox strict mode, private windows) |
 | [`e3671b0`](https://github.com/TEE123754/DraftWise/commit/e3671b0) | Demo caps made configurable and raised from a hard-coded 20 to 60 |
+| *This update* | Hosted demo now reads documents on Railway (worker runs inside the image); newest demo session served first and in inbox order; asking again for a queued email moves it to the front; small text files parsed in-process; reading-progress banner; Linux CI fix; AI step in the guided tour; [impact and rollout plan](docs/IMPACT_AND_ROLLOUT.md) |
 
 ### Still open
 
-Gmail sync, a fresh held-out evaluation, a live AI provider quality run, per-visitor (rather than global) demo rate limits and end-to-end deployed smoke tests. Details are in [Known Limitations](#known-limitations).
+Gmail sync, a fresh held-out evaluation, a live AI provider quality run, per-visitor (rather than global) demo rate limits, end-to-end deployed smoke tests, and the time-to-decision report and pilot described in [docs/IMPACT_AND_ROLLOUT.md](docs/IMPACT_AND_ROLLOUT.md). Details are in [Known Limitations](#known-limitations).
 
 ---
 
@@ -586,14 +588,24 @@ The use case asks for a system that starts from an inbox, decides which emails n
 | **End-to-end functionality** | Live demo: open a sample email → documents linked → seven-field comparison → correction preview → returned draft analysis. Backed by an API + worker + database journey test. |
 | **Architecture & scalability** | Typed service boundaries, durable `processing_jobs` with `SKIP LOCKED` leasing and fencing, tenant isolation with Row Level Security. See [System Architecture](#system-architecture). |
 | **Technology integration** | Next.js ↔ FastAPI ↔ Supabase (Auth, Storage, PostgreSQL) ↔ Gemini / Morpheus, plus Tesseract OCR, all connected and deployed. |
-| **Engineering quality & robustness** | 234 backend unit tests, 58 PostgreSQL integration tests, 48 Playwright browser tests with axe accessibility checks, ruff, CI on every push. See [Benchmark & Validation Results](#benchmark--validation-results). |
+| **Engineering quality & robustness** | 241 backend unit tests, 63 PostgreSQL integration tests, 51 Playwright browser tests with axe accessibility checks, ruff, and a CI workflow on every push (see the Project Status note on the Linux fix). See [Benchmark & Validation Results](#benchmark--validation-results). |
 | **Solution effectiveness & value** | The amendment cycle: regression detection, exact-scope correction previews, one-question-at-a-time next actions. See [Signature Workflows](#signature-workflows). |
 | **User experience & differentiation** | Attention-first inbox, evidence viewer, explainable states, page-aware assistant, keyboard-accessible tooltips, mobile layouts verified at 390 / 768 / 1440 px. |
-| **Impact & future potential** | Approved equivalence memory (scoped per customer), drift monitoring against a reviewed baseline, Gmail connection, workspace-level AI budgets. |
+| **Impact & future potential** | [docs/IMPACT_AND_ROLLOUT.md](docs/IMPACT_AND_ROLLOUT.md): eight success measures with definitions, data sources and pilot targets (targets, not results), a shadow-mode then assisted-mode rollout with go / no-go gates, and risks. Plus approved equivalence memory (scoped per customer), drift monitoring against a reviewed baseline, Gmail connection and workspace-level AI budgets. |
 
 ---
 
 ## AI Design Principles
+
+### Where AI is used, and what it adds
+
+| Stage | What the model does | What decides when it is unavailable | Measured effect |
+|---|---|---|---|
+| **Classify** an email into five categories | Reads the current message and decides when the rules abstain (misleading subject, unusual wording) | The email stays *unclassified* and goes to a person | Held-out set of 60 emails: rules alone 48 % (0 confidently wrong), rules plus AI **95 %** |
+| **Extract** the seven fields | Reads fields the labelled-text rules could not find, in layouts the rules do not know | The field is `missing` and the case goes to review | Held-out: 21 / 21 fields on 3 unseen documents with AI |
+| **Route** an assistant question | Maps a free-text question to one of a fixed set of read-only answers; it cannot write facts or invent citations | Common questions still match by keyword; the rest are answered *unsupported* | Not benchmarked |
+
+So the model is what lets DraftWise handle wording and layouts it has never seen; the rules, the evidence check and the person decide what is true. In the hosted demo AI is off until you choose **Review with AI** (9 calls per session), so try that on a few emails to see it: each result is labelled AI, rules or timeout fallback.
 
 DraftWise uses an LLM, but it does not let the LLM be the authority on anything that matters. These are the six principles the system is built around, each traceable to code.
 
@@ -1057,12 +1069,12 @@ Rules alone did **not** generalise: they abstained on about half the held-out em
 
 | Suite | Scope | Command |
 |---|---|---|
-| Backend unit | 234 tests: verifier, parsers, grounding, classification, email state, rules, previews, revision analysis … | `uv run pytest tests/unit -q` |
-| Backend integration | 58 tests against real PostgreSQL: tenant isolation, concurrency, lease recovery, worker restart, amendment journey, storage cleanup | `node tools/postgres/run-tests.mjs` |
-| Browser | 48 Playwright tests with axe accessibility checks: inbox, dashboard, amendment regression, field review, public pages, layouts | `pnpm test:e2e` |
+| Backend unit | 241 tests: verifier, parsers, grounding, classification, email state, rules, previews, revision analysis … | `uv run pytest tests/unit -q` |
+| Backend integration | 63 tests against real PostgreSQL: tenant isolation, concurrency, lease recovery, worker restart, amendment journey, storage cleanup | `node tools/postgres/run-tests.mjs` |
+| Browser | 51 Playwright tests with axe accessibility checks: inbox, dashboard, amendment regression, field review, public pages, layouts | `pnpm test:e2e` |
 | Repository | File inventory, Markdown links, JSON syntax, schema examples, SQL inventory | `python scripts/validate_repository.py` |
 
-CI (`.github/workflows/test-application.yml`) runs the backend suite against PostgreSQL 18, ruff, repository validation, the frontend production build and the Playwright suite on every push and pull request.
+CI (`.github/workflows/test-application.yml`) runs the backend suite against PostgreSQL 18, ruff, repository validation, the frontend production build and the Playwright suite on every push and pull request. The backend job was red on every push until this update because of a Linux-only pytest hook error (see [Project Status](#project-status)); the suite always passed on the Windows development machine, which is why it went unnoticed.
 
 ---
 
@@ -1309,9 +1321,10 @@ SITE_URL=http://localhost:3000          # used for SEO metadata; set to the prod
 2. Railway reads the root [`railway.json`](railway.json), which selects `docker/backend.Dockerfile` and sets the health check to `/health` with an on-failure restart policy.
 3. Add the backend variables above in **Railway → Variables**. For a deployment with the public demo use `ENVIRONMENT=development` and `DEMO_ENABLED=true`: the demo refuses to run when `ENVIRONMENT=production`, which is the stricter mode (HTTPS-only CORS, no demo) for a deployment without one. Set `ALLOWED_ORIGINS` to your Vercel domain(s) over `https://`.
 4. Under **Settings → Networking**, generate a public domain and use it as `NEXT_PUBLIC_API_URL` in Vercel.
-5. **Add the worker as a second service.** Create another service from the same repository, give it the same variables, and set its start command to `python -m app.workers.runner`. The image's default command starts only the API, and the worker is what reads documents and runs the checks: without one, `/ready` returns `503` and emails stay at *documents not read yet*. The worker exposes no HTTP port, so the `/health` health check in `railway.json` does not suit it; give that service its own config or clear the health check in its settings.
+5. **No second service is needed.** The image starts the API *and* a supervised worker (`python -m app.workers.runner`, restarted if it exits) in one container, so this single Railway service is a complete deployment. The worker is what reads documents and runs the checks: without one, `/ready` returns `503` and emails stay at *documents not read yet*. To scale the worker separately, set `RUN_WORKER=false` on the API service and add a second service from the same image whose start command is `python -m app.workers.runner` (it has no HTTP port, so clear the health check on that service). Extra workers are safe: they share the queue through PostgreSQL row locks. Set `WORKER_CONCURRENCY` (1 to 8, default 3) to change how many jobs one worker runs at once.
+6. **Place the service near the database.** Each job makes about 25 database round trips, so throughput follows the network latency between Railway and Supabase. In Railway **Settings → Region**, pick the region closest to your Supabase project's region.
 
-The container starts `uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}` as a non-root user with Tesseract installed. Run migrations once as a deployment operation, never concurrently from every worker.
+The container starts `uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}` (plus the worker unless `RUN_WORKER=false`) as a non-root user with Tesseract installed. Run migrations once as a deployment operation, never concurrently from every worker.
 
 ### Vercel (frontend)
 
@@ -1493,7 +1506,9 @@ Large artefacts belong in Storage, not PostgreSQL JSONB. Every child row carries
 
 ### `/ready` returns 503 "worker is not active"
 
-The API is up but no worker heartbeat was seen in the last 60 seconds. Start the worker (`uv run python -m app.workers.runner`). It is a separate process from the API, and on Railway it needs its own service. After changing backend code, restart stale worker processes.
+The API is up but no worker heartbeat was seen in the last 60 seconds. On localhost, start the worker (`uv run python -m app.workers.runner`): it is a separate process from `uv run shipping-api`. The Docker image (and so Railway) runs a worker beside the API unless `RUN_WORKER=false`. After changing backend code, restart stale worker processes.
+
+> **Any machine with `DATABASE_URL` set can run a worker against the same database.** A `/ready` answer of `worker: active` therefore does not prove the hosted worker is up: a worker left running on a developer laptop keeps it green. Check the Railway logs for `worker exited` lines, or stop local workers before judging the hosted demo.
 
 ### The frontend cannot reach the API
 
@@ -1520,7 +1535,7 @@ Add your redirect URL — for example `http://localhost:3000/dashboard` — to t
 
 ### Emails stay "Needs review — documents not read yet"
 
-Documents are read by the worker. Check that the worker is running and look at `GET /api/v1/workspace/processing` for progress. Offline processing of the full 520-email sample is limited by database round-trip latency, so run the API close to the database.
+Documents are read by the worker. Check that the worker is running and look at `GET /api/v1/workspace/processing` for progress (the same numbers drive the banner on the Overview and Inbox). Throughput is limited by database round-trip latency, so run the worker close to the database. Newer demo sessions are served first and older sessions wait, so a very old session may stay unread while new ones are open.
 
 ### A migration seems to be missing
 
@@ -1555,6 +1570,8 @@ Use Node 22+ and pnpm 10.15, and install from the lockfile with `pnpm install --
 ## Known Limitations
 
 DraftWise is a hackathon prototype. These are stated plainly so results are not over-read.
+
+- **Hosted demo speed depends on where the worker runs.** Reading all 126 comparison emails takes as long as their database round trips (about 25 per job). Before this update the hosted stack had no worker of its own, so a first-time visitor saw every comparison email stuck at *Processing*. The worker is now part of the image, but the reading time on the hosted stack has to be re-measured after deployment and is not yet recorded here.
 
 - **1.000 is a sample-only score.** Rules-only classification on the independent 60-email held-out set was 48 % (with abstention, not wrong answers), and live-AI classification was 95 %. A fresh held-out set with new wording has not been built yet, and no independently reviewed accuracy evaluation exists.
 - **Gmail import is not complete.** OAuth connect, encrypted token storage and revocation work, but `POST /gmail/connections/{id}/sync` only marks the connection as syncing and does not fetch mail yet. The demo's **sample fetch** is a labelled simulator, not a real Gmail connection.
@@ -1593,6 +1610,7 @@ DraftWise is a hackathon prototype. These are stated plainly so results are not 
 | [docs/USE_CASE_TRACEABILITY.md](docs/USE_CASE_TRACEABILITY.md) | Use-case requirements mapped to acceptance gates |
 | [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md) · [docs/FEATURE_CONTRACTS.md](docs/FEATURE_CONTRACTS.md) | Typed API and feature behaviour |
 | [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) · [docs/OPERATIONS.md](docs/OPERATIONS.md) | Vercel + Railway deployment, secrets, quotas, security |
+| [docs/IMPACT_AND_ROLLOUT.md](docs/IMPACT_AND_ROLLOUT.md) | Who it is for, success measures with targets and data sources, pilot and rollout path, risks |
 | [docs/LOCAL_SETUP.md](docs/LOCAL_SETUP.md) | Detailed local setup |
 | [docs/BRAND_AND_SITE_PLAN.md](docs/BRAND_AND_SITE_PLAN.md) | Brand, tone and public-site brief |
 | [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) | Latest status checkpoint |
