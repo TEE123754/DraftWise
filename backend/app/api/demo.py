@@ -45,6 +45,14 @@ async def simulate_fetch(
         source.close()
 
 
+def demo_cookie_options(request) -> dict:
+    # An HTTPS frontend on another site (Vercel calling Railway) only keeps and sends the cookie
+    # when it is SameSite=None and Secure. Local HTTP development stays Lax.
+    if (request.headers.get("origin") or "").startswith("https://"):
+        return {"samesite": "none", "secure": True}
+    return {"samesite": "lax", "secure": False}
+
+
 def ensure_demo(request):
     settings = request.app.state.settings
     if not settings.demo_enabled or settings.environment == "production":
@@ -93,10 +101,9 @@ async def start_demo(request: Request, response: Response):
         "draftwise_demo",
         token,
         httponly=True,
-        samesite="lax",
-        secure=False,
         max_age=8 * 3600,
         path="/api/v1",
+        **demo_cookie_options(request),
     )
     return result
 
@@ -111,5 +118,7 @@ async def leave_demo(request: Request, response: Response):
                 "update public.demo_sessions set expires_at=now() where token_hash=%s",
                 (token_hash(token),),
             )
-    response.delete_cookie("draftwise_demo", path="/api/v1")
+    response.delete_cookie(
+        "draftwise_demo", path="/api/v1", httponly=True, **demo_cookie_options(request)
+    )
     return {"state": "ended"}
