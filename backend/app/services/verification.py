@@ -1,3 +1,4 @@
+import re
 from uuid import UUID
 
 from rapidfuzz.fuzz import ratio, token_sort_ratio
@@ -15,6 +16,24 @@ from app.services.equivalence_rules import EquivalenceRule, match_rule
 from app.services.evidence_dependencies import resolve_field
 from app.services.normalization import normalize
 
+# "To the Order of" makes a bill of lading negotiable; a named consignee makes it a straight one.
+# Both carry the consignee's name, so the name comparison alone cannot tell them apart.
+_ORDER_CLAUSE = re.compile(r"\bto\s+(?:the\s+)?order\b", re.I)
+
+
+def _order_note(field: FieldName, order_clauses: list[bool]) -> str | None:
+    if field != FieldName.CONSIGNEE or len(order_clauses) != 2 or order_clauses[0] == order_clauses[1]:
+        return None
+    if order_clauses[1]:
+        return (
+            "The BL is issued 'to the order of' (a negotiable bill of lading) while the SI names "
+            "a straight consignee. Confirm the BL type with the carrier."
+        )
+    return (
+        "The SI asks for a bill of lading 'to the order of' (negotiable) while the BL names a "
+        "straight consignee. Confirm the BL type with the carrier."
+    )
+
 
 def verify(
     si: Extraction | None,
@@ -31,13 +50,18 @@ def verify(
     rows = []
     for field in FIELDS:
         values, evidence, qualities, reasons, normalized_rules = [], [], [], [], []
+        order_clauses = []
         for document, role in ((si, "SI"), (bl, "BL")):
             if document is None:
                 values.append(Value(raw=None, normalized=None, extraction_id=None))
                 reasons.append("missing")
                 qualities.append(0.0)
+                order_clauses.append(False)
                 continue
             source, dependencies = resolve_field(document, field)
+            order_clauses.append(
+                bool(_ORDER_CLAUSE.search(" ".join([source.raw_value or "", *(e.quote for e in source.evidence)])))
+            )
             evidence.extend([e.block_id for e in source.evidence] + list(dependencies))
             other = bl if role == "SI" else si
             counterpart = (
@@ -87,6 +111,8 @@ def verify(
         rule = "evidence_gate_v1"
         both_present = left.normalized is not None and right.normalized is not None
         needs_review = bool(reasons) or pairing_quality < 0.90
+        order_note = _order_note(field, order_clauses)
+        severity_floor = "none"
         matched_rule = None
         if equivalence_rules and left.raw and right.raw:
             matched_rule = match_rule(
@@ -127,6 +153,9 @@ def verify(
                 decision = "match"
                 rule = next((r for r in normalized_rules if r), rule)
                 explanation = "Both source values match after deterministic normalization."
+                if order_note:
+                    rule, severity_floor = "consignee_order_clause_v1", "low"
+                    explanation = f"The names match. {order_note}"
         elif both_present and field in PARTIES:
             score = max(
                 ratio(str(left.normalized), str(right.normalized)),
@@ -139,6 +168,8 @@ def verify(
             else:
                 decision, rule = "mismatch", "distinct_identity_v1"
                 explanation = f"{field.value.replace('_', ' ').title()} differs between SI and BL."
+                if order_note:
+                    explanation = f"{explanation} {order_note}"
         elif both_present:
             decision, rule = "mismatch", "canonical_difference_v1"
             explanation = f"{field.value.replace('_', ' ').title()} differs: SI {left.normalized}; BL {right.normalized}."
@@ -154,7 +185,7 @@ def verify(
                 si=left,
                 bl=right,
                 decision=decision,
-                severity="none"
+                severity=severity_floor
                 if decision == "match"
                 else ("medium" if field == FieldName.NOTIFY else "high"),
                 confidence=confidence,
