@@ -1,5 +1,7 @@
 # DraftWise — Shipping Email & Document Verification Workspace
 
+**🚀 Live deployment: [https://draft-wise-gold.vercel.app/](https://draft-wise-gold.vercel.app/)** — open the [no-sign-up demo](https://draft-wise-gold.vercel.app/demo) straight away.
+
 **Event:** Averis x Monash Hackathon 2026  
 **Team:** Commitment Issues  
 **Track:** Shipping Document Verification (Shipping Instructions vs. draft Bill of Lading)  
@@ -10,6 +12,8 @@
   <p><em>Every draft checked. Every change explained.</em></p>
   <br/>
   <a href="https://draft-wise-gold.vercel.app/"><strong>🚀 Live Demo</strong></a>
+  &nbsp;|&nbsp;
+  <a href="#the-problem-and-how-we-tackle-it"><strong>🎯 Problem &amp; Approach</strong></a>
   &nbsp;|&nbsp;
   <a href="#why-choose-draftwise"><strong>💡 Why DraftWise</strong></a>
   &nbsp;|&nbsp;
@@ -53,9 +57,12 @@ The project was built by **Team Commitment Issues** for the **Averis x Monash Ha
 
 ## Table of Contents
 
+- [The Problem and How We Tackle It](#the-problem-and-how-we-tackle-it)
 - [Why Choose DraftWise](#why-choose-draftwise)
+- [Live Demo: How It Works and Its Limits](#live-demo-how-it-works-and-its-limits)
 - [Run on Localhost (Quick Start)](#run-on-localhost-quick-start)
 - [Live Deployment](#live-deployment)
+- [Project Status](#project-status)
 - [Hackathon Alignment](#hackathon-alignment)
   - [Problem statement coverage](#problem-statement-coverage)
   - [Judging criteria evidence](#judging-criteria-evidence)
@@ -80,7 +87,6 @@ The project was built by **Team Commitment Issues** for the **Averis x Monash Ha
 - [Development & Testing](#development--testing)
 - [Environment Variables](#environment-variables)
 - [Deployment](#deployment)
-- [Trying the Product](#trying-the-product)
 - [API Reference](#api-reference)
 - [Data and Storage](#data-and-storage)
 - [Security & Safety](#security--safety)
@@ -88,6 +94,68 @@ The project was built by **Team Commitment Issues** for the **Averis x Monash Ha
 - [Known Limitations](#known-limitations)
 - [Documentation Index](#documentation-index)
 - [Verification Checklist](#verification-checklist)
+
+---
+
+## The Problem and How We Tackle It
+
+### The problem statement
+
+The hackathon brief, *"Shipping document verification: from email inbox to discrepancy report"*, describes a shipping operations team whose single inbox mixes very different messages: requests to check documents, requests to prepare new shipping instructions, invoice questions, operational updates — and spam.
+
+For a **document-checking request**, the team compares two documents:
+
+- the **Shipping Instruction (SI)** — the intended shipment details, and **the reference** for the check;
+- the **draft Bill of Lading (BL)** — which must be checked **before it is finalised**.
+
+The brief names three problems:
+
+| # | Problem | Why it hurts |
+|---|---|---|
+| 1 | **Finding the right emails takes time.** Staff must read each message and decide what it needs. | A document request that is overlooked never reaches the checking step. |
+| 2 | **Manual comparison is repetitive and easy to get wrong.** Names, ports, quantities and weights must be checked across two documents. | A missed discrepancy means corrections, delays and extra work. |
+| 3 | **The same information can look different.** One document says "Port of Loading", the other "Load Port". | A system has to recognise these as the same field, or it raises false alarms. |
+
+It asks for a system that, starting from the inbox, produces a clear result for every email and can:
+
+| Capability | What it means |
+|---|---|
+| **Classify** | Tell comparison requests, new-SI requests, invoice queries, general messages and spam apart. Only comparison requests continue to checking. |
+| **Extract** | For comparison requests, read the SI and BL attachments and find the matching shipment fields. |
+| **Compare** | Check the values, surface mismatches and show the SI and BL values side by side. |
+| **Ask for help** | When it cannot finish on its own, escalate to a person with the relevant context, rather than guessing or failing silently. |
+
+**Exactly seven fields** are compared: shipper, consignee, notify party, port of loading, port of discharge, container count and gross weight in kilograms. If all seven agree the report says *"No mismatch detected"*. Its worked example: the SI lists 3 containers and 22,000 kg, the BL lists 4 containers and 22,000 kg — flag **only** the container count, showing SI: 3 / BL: 4.
+
+The **advanced stage** raises the difficulty with more realistic data:
+
+| Advanced challenge | What changes |
+|---|---|
+| PDF and Word attachments | Extract from tables and different page layouts, not just plain text. |
+| Scanned documents | Image-only PDFs and scanned pages; use OCR, a vision model, or both. |
+| Messier inputs | Varied labels, formatting differences, misleading subjects, missing attachments — and the system must tell a **real discrepancy** from a **reading or formatting issue**. |
+| Reliability and human review | When a document is unreadable, a value is missing or the result is uncertain, send it for review with the evidence and reason, let a person confirm or correct it, update the report, and make failures visible and retryable. |
+
+Success means finding the right requests and the right discrepancies **without false alarms**, and knowing when to ask a person.
+
+### How DraftWise tackles it
+
+| Problem | How DraftWise tackles it | See it in |
+|---|---|---|
+| **1. Finding the right emails takes time** | Every email is classified on arrival into the five categories, with rules first and AI only where rules abstain. Only comparison requests continue to checking; everything else gets a category-specific action. The inbox is **attention-first**: one state per email, plain-language reason chips and a recommended next action, so nothing that needs a person is buried. Suspicious mail is held before any processing. | [Email Review States](#email-review-states), [User Workflow](#user-workflow) |
+| **2. Manual comparison is repetitive and error-prone** | DraftWise reads the SI and BL (TXT, PDF, Word, Excel, scans), extracts the seven fields **with the source quote for each**, and compares them deterministically: decimal-exact weights with unit conversion, container-count parsing, port codes, party identity. Mismatches appear side by side, and the SI is always the reference. | [Verification Engine](#verification-engine), [Processing Pipeline](#processing-pipeline) |
+| **3. The same information looks different** | Label alias tables (`Consignor`, `Exporter`, `Loading Port`, `Qty of Containers`, `Gross Mass` …), bilingual labels, table layouts, `22 MT` ↔ `22,000 KG`, placeholder handling (`TBA` is *missing*, not a value), curated port aliases, and customer-scoped, human-approved equivalence rules. Formatting differences do not become false alarms. | [Verification Engine](#verification-engine) |
+| **4. Ask for help instead of guessing** | Anything unreadable, missing, ambiguous or unsupported becomes `NEEDS_REVIEW` with a typed reason and the source evidence. A person confirms or corrects the value; that writes an immutable revision and recomputes the report. Failures are visible states with bounded, explicit retry — never a fabricated result. | [AI Design Principles](#ai-design-principles), [Job State Machine](#job-state-machine) |
+| **5. Catch problems before the draft is finalised** | The **amendment loop**: preview exactly what to ask for, ingest the corrected draft, and see what was fixed and what **regressed**, against the same pinned SI. | [Signature Workflows](#signature-workflows) |
+
+**The brief's own example is covered by unit tests.** Against an SI with 3 containers and 22,000 KG, a BL with 4 containers exports `container_count` as the only defect field, and a weight written as `22 MT` matches `22,000 KG` after exact unit conversion.
+
+### What we cover, and what we added
+
+- **All four required capabilities** — classify, extract, compare and ask for help — including the seven-field report and the *"No mismatch detected"* result, shown only when all seven fields are supported matches.
+- **All four advanced challenges** — PDF and Word tables, scanned pages with OCR, messy inputs (varied labels, misleading subjects, missing attachments) and human review with visible, retryable failures.
+- **Self-evaluation** — a reproducible offline runner that exports the agreed one-object-per-email submission and reads back the organizer's scoreboard. See [Benchmark & Validation Results](#benchmark--validation-results) for the score **and** its caveats.
+- **Beyond the brief** — the amendment cycle with regression detection, correction previews, spam and phishing holds, drift monitoring, a page-aware assistant, approved equivalence rules, a customisable dashboard and a Gmail connection (sync is still in progress).
 
 ---
 
@@ -105,7 +173,7 @@ The project was built by **Team Commitment Issues** for the **Averis x Monash Ha
 | 🛑 | **Never a false all-clear** | "No mismatch detected" appears only when all seven fields are supported matches. Missing, unreadable or ambiguous data becomes a visible review item. | Two missing values are never a match; an exhaustive invariant test guarantees nothing shows green unless a comparison actually passed. |
 | 🔁 | **The whole amendment loop, not just a diff** | Preview exactly what to ask for, ingest the corrected draft, and see what was fixed, what is still wrong, and what **regressed**. | Regression detection (`fixed` / `unchanged` / `new` / `regressed` / `unresolved`) against one pinned SI; correction previews with a "what would remain" forecast. |
 | 🎯 | **One question at a time** | The next-action card asks the single decision that unblocks the most checks, with the evidence already on screen and an honest *I cannot confirm* button. | Dependency-ordered action planner; dismissing a question never produces a clean result. |
-| 💸 | **Predictable AI cost** | Rules do the work by default; AI runs only when rules abstain or you ask. The whole 520-email sample scores offline in about 4 seconds with zero provider calls. | `BoundedAI`: content-hash cache, per-workspace daily budget (`AI_DAILY_BUDGET`), back-off on rate limits, rules fallback. |
+| 💸 | **Predictable AI cost** | Rules do the work by default; AI runs only when rules abstain or you ask. The whole 520-email sample scores offline in under 7 seconds with zero provider calls. | `BoundedAI`: content-hash cache, per-workspace daily budget (`AI_DAILY_BUDGET`), back-off on rate limits, rules fallback. |
 | 🧑‍⚖️ | **You stay in control** | Nothing is sent for you. Exports say *Copied*, never *Sent* or *Corrected*. A model cannot approve an alias or pick a disputed SI on your behalf. | Only a reviewer or admin can approve a scoped equivalence rule; rules never override numbers, countries or `ON BEHALF OF`. |
 | 📄 | **Copes with messy reality** | TXT, PDF, Word tables, Excel, scanned pages (OCR), bilingual labels, `22 MT` vs `22,000 KG`, `TBA` placeholders, misleading subjects, quoted email history. | Parser suite, unit-conversion and label-alias tests, held-out documents in different layouts. |
 | 🛡️ | **Safety built in** | Suspicious mail is held for review before any document is processed; drift is monitored against a *reviewed* baseline; every workspace is isolated. | Explainable safety signals, alerts with source links, Row Level Security with tenant-isolation tests. |
@@ -141,6 +209,108 @@ The comparison below is against a generic *"an LLM reads two documents and summa
 - We do **not** claim that no other product can compare shipping documents or draft amendment requests — comparison alone is not our claim. Our difference is the evidence-first amendment loop and how conservatively we treat uncertainty.
 - We do **not** claim measured time savings. That the guided workflow reduces reviewer effort is a hypothesis we designed for, not a result we have measured.
 - A **Checked** result covers the seven fields only. It is not legal, customs or cargo-release approval.
+
+---
+
+## Live Demo: How It Works and Its Limits
+
+**Try it now: [draft-wise-gold.vercel.app/demo](https://draft-wise-gold.vercel.app/demo)** — click **Start the demo**. No account, no credit card.
+
+You get an **isolated sample workspace** holding the 520 provided emails and 250 shipping documents. Everything you do stays in your own sandbox; other visitors cannot see or change it.
+
+### What you can explore
+
+| Feature | In the demo |
+|---|---|
+| Email classification (5 categories) | ✅ Working |
+| Seven-field SI vs BL comparison with source evidence | ✅ Working |
+| Human review queue and field correction | ✅ Working |
+| Amendment cases, correction preview, returned-draft re-check | ✅ Working |
+| Spam and phishing alerts, safety holds | ✅ Working |
+| Concept drift monitoring | ✅ Working |
+| Ask DraftWise assistant, customisable dashboard | ✅ Working |
+| Trash, restore and delete | ✅ Working |
+| Review with AI | ⚠️ Available, but limited to a small allowance (below) |
+| Gmail | 🧪 **Simulated.** *Simulate Gmail fetch* imports a prepared sample email; it does not connect to Google. |
+| File uploads | ⚠️ Possible, but see the note on confidentiality below |
+
+### How the demo works
+
+```mermaid
+sequenceDiagram
+  actor V as Visitor
+  participant W as Vercel site
+  participant A as API on Railway
+  participant D as Database
+  participant K as Worker
+  V->>W: Click Start the demo
+  W->>A: POST /api/v1/demo/session (same origin, proxied)
+  A->>D: Check capacity and hourly limit under a lock
+  A->>D: Create a private workspace and seed the sample data
+  A->>D: Queue rules-only reading of the comparison emails
+  A-->>V: HttpOnly session cookie, valid for 8 hours
+  V->>W: Open the dashboard and inbox
+  K->>D: Read and compare documents in the background
+  V->>A: Every request carries the cookie and X-Demo-Mode
+  V->>A: End demo
+  A->>D: Expire the session immediately
+  K->>D: Purge the expired sample data after a short grace period
+```
+
+1. **Start.** *Start the demo* calls `POST /api/v1/demo/session`. If your browser already holds a valid demo cookie, you are simply returned to the session you had.
+2. **Guard rails.** Under a database lock (so concurrent visitors cannot slip past the caps), the server checks the [limits](#demo-limits) and refuses politely if they are reached.
+3. **Your own sandbox.** It creates an anonymous user and a private workspace named *DraftWise demo*. You act as an **admin inside that workspace only**; the demo cannot reach any real workspace.
+4. **Your own copy of the data.** It seeds all 520 emails and 250 attachment records, rule-based classifications for the emails the rules can decide (the rest stay unclassified until you ask for AI), email-safety assessments and their spam / phishing alerts, and an amendment case for each comparison email that has documents. The attachment *bytes* are not copied into Storage; they are read on demand from the sample bundle embedded in the backend.
+5. **Background reading, rules only.** The worker reads and compares every comparison email's documents **without calling any AI provider**. The inbox appears immediately and fills in as the worker goes: rows marked *needs review — documents not read yet* turn into *Checked* or *Mismatch found*. Reading all 126 comparison emails took about 9 minutes against a remote database in our one measurement.
+6. **Your session cookie.** A random token is generated, only its **SHA-256 hash** is stored, and the browser receives it as an `HttpOnly` cookie named `draftwise_demo`, scoped to `/api/v1`, valid for 8 hours. Over HTTPS from another site it is `SameSite=None; Secure`; on local HTTP it stays `Lax`.
+7. **Same-origin API calls.** In production the website forwards `/api/v1/*` to the Railway backend through its own domain, so the cookie is first-party. That keeps the demo working in Safari, Firefox strict mode and private windows, which block third-party cookies.
+8. **Every request is checked.** Each call carries the cookie, the `X-Demo-Mode: true` header and your workspace ID; the server confirms the session is unexpired and that the workspace is yours.
+9. **Ending.** **End demo** expires the session immediately and clears the cookie. Expired sample data is deleted automatically after a short grace period.
+
+### Demo limits
+
+| Limit | Value | Setting | What happens at the limit |
+|---|---|---|---|
+| **Session lifetime** | 8 hours | fixed | `401` *Demo session expired. Open the demo again.* — just start a new one. |
+| **Demo sessions alive at once** | 60 | `DEMO_MAX_SESSIONS` (1 – 1000) | `429` *Demo capacity reached.* |
+| **New demo sessions per hour** | 60, counted across **all** visitors | `DEMO_MAX_SESSIONS_PER_HOUR` (1 – 1000) | `429` *Demo creation limit reached. Try again in an hour.* |
+| **Live AI calls per session** | 9 | `DEMO_AI_CALL_LIMIT` (0 – 30), `DEMO_AI_ENABLED` | *Demo AI allowance reached; using rules.* Everything keeps working on rules. |
+| **AI by default** | Off — rules only until you click **Review with AI** | — | Each result is labelled AI, deterministic rules, or timeout fallback. |
+| **Sessions per browser** | One — reopening the demo resumes it | — | — |
+| **Data** | The fixed sample bundle | — | The demo cannot be pointed at your own mailbox. |
+| **Production mode** | The demo refuses to run when `ENVIRONMENT=production` | `ENVIRONMENT`, `DEMO_ENABLED` | `404` *Local demo is not enabled.* The hosted demo runs in non-production mode by design. |
+
+> **Good to know.**
+> - Each session holds **its own copy** of the sample data, so the caps are a database-storage decision. Raise them only as far as your database allows.
+> - A session keeps its slot until it expires or you click **End demo**, then frees it after a short grace period. Please end your demo when you are done.
+> - The hourly cap is shared by everyone, not per person. If the demo is busy, try again later, or [run it on localhost](#run-on-localhost-quick-start).
+
+### Clean-up and privacy
+
+- **Automatic purge.** Expired sessions are purged (2-minute grace, in batches of up to 20) whenever a new session starts and by the background worker. This deletes the seeded emails, documents' derived data, cases, alerts, jobs and reports for that workspace.
+- **What remains.** Anonymous session metadata and audit history are kept.
+- **Uploads are the exception.** A session that uploaded its own file is **not** purged automatically, because uploaded bytes live in shared Storage and need administrator cleanup. Such a session keeps occupying one of the 60 slots until an administrator cleans it.
+- **Do not upload confidential material into the demo.**
+- The demo makes **no anonymous paid AI calls beyond the 9-call allowance**, and none at all unless you ask.
+
+### A guided tour (about 5 minutes)
+
+1. **Inbox → `email_001`.** Read the amendment request and choose **Open amendment case**.
+2. **Select the SI and the draft BL** once extraction finishes.
+3. **Inspect all seven fields** side by side with their source evidence, then **preview a correction**.
+4. **Try a few other states.** Filter the inbox for *Mismatch found*, *Needs documents* and *Held for safety*, and open one of each.
+5. **Alerts.** Inspect a spam or phishing signal and its source evidence.
+6. **Analytics.** See the organizer-scorer result and the AI classifier panel, each labelled with its sample size.
+7. **Ask DraftWise** (bottom-right): *"What needs my attention?"* — or, with an email open, *"What should I do here?"*
+8. **End demo** when you are finished.
+
+### Using your own account instead
+
+Choose **Use my account instead** on the demo page (or open `/sign-in`), enter your email address and follow the one-time code or link Supabase sends. First sign-in creates a private admin workspace. There are no shared demo credentials, and the demo caps above do not apply — your workspace has its own daily AI budget (`AI_DAILY_BUDGET`, default 30).
+
+### Running the demo yourself
+
+Set `DEMO_ENABLED=true` (and keep `ENVIRONMENT` out of `production`), run the API **and the worker**, and open `/demo`. The sample bundle is embedded at `backend/data/sdoc-hackathon-bundle.zip`; set `DEMO_DATASET_PATH` only to use a different one. See the [Quick Start](#run-on-localhost-quick-start).
 
 ---
 
@@ -291,7 +461,7 @@ You can exercise the comparison logic without Supabase, keys or a browser:
 ```bash
 cd backend
 uv sync --frozen
-uv run pytest tests/unit -q                    # 228 tests, no database needed
+uv run pytest tests/unit -q                    # 234 tests, no database needed
 uv run shipping-verify --si path/to/instructions.txt --bl path/to/draft.txt --output report.json
 ```
 
@@ -320,20 +490,74 @@ More in [Troubleshooting](#troubleshooting).
 | Backend API | Railway | [https://draftwise-production.up.railway.app](https://draftwise-production.up.railway.app/health) | FastAPI service built from `docker/backend.Dockerfile` via the root `railway.json`. The background worker is a separate process from the same image (see [Deployment](#deployment)). |
 | Database, Auth, Storage | Supabase | Project-specific | PostgreSQL (schema in `database/`), email sign-in, and a private `shipping-originals` bucket. |
 
-Source code: [github.com/TEE123754/DraftWise](https://github.com/TEE123754/DraftWise)
+| Link | URL |
+|---|---|
+| **Live app** | [https://draft-wise-gold.vercel.app/](https://draft-wise-gold.vercel.app/) |
+| **No-sign-up demo** | [https://draft-wise-gold.vercel.app/demo](https://draft-wise-gold.vercel.app/demo) |
+| **API health** | [https://draftwise-production.up.railway.app/health](https://draftwise-production.up.railway.app/health) |
+| **Source code** | [github.com/TEE123754/DraftWise](https://github.com/TEE123754/DraftWise) |
 
 The frontend is deployed with **Vercel root directory `frontend/`**. The backend is deployed on Railway from the repository root, where `railway.json` selects the Dockerfile and points the health check at `/health`. The step-by-step guide is in [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md).
 
 ```env
-# Production frontend variable (Vercel)
+# Production frontend variable (Vercel) - set it before the build
 NEXT_PUBLIC_API_URL=https://draftwise-production.up.railway.app
 ```
+
+**Same-origin API.** Because `NEXT_PUBLIC_API_URL` is an `https://` URL, `frontend/next.config.ts` rewrites `/api/v1/*` to the Railway backend and the browser only ever calls its own origin (`https://draft-wise-gold.vercel.app/api/v1/…`). That keeps the demo session cookie first-party, so the demo works in Safari, Firefox strict mode and private windows. The choice is made at **build time**, so redeploy Vercel after changing the variable. With an `http://` URL (local development) the browser calls the backend directly.
+
+---
+
+## Project Status
+
+*Last verified on 21 September 2026, at commit [`e3671b0`](https://github.com/TEE123754/DraftWise/commit/e3671b0).*
+
+### What is live
+
+| Component | State |
+|---|---|
+| **Frontend** | Deployed on Vercel at [draft-wise-gold.vercel.app](https://draft-wise-gold.vercel.app/): the "Version B" glass-style redesign, public pages (`/`, `/workflow`, `/pricing`, `/privacy`, `/terms`), the demo and the signed-in workspace. It forwards `/api/v1/*` to the backend through its own origin. |
+| **API** | Deployed on Railway at [draftwise-production.up.railway.app](https://draftwise-production.up.railway.app/health). `/health` returns `ok`, and `/ready` reported the database `ok` and a worker `active` when last checked. |
+| **Database, Auth, Storage** | Supabase: 33 tables with Row Level Security, numbered migrations through `016`, a private `shipping-originals` bucket, email one-time-code sign-in. |
+| **Demo** | Enabled, running in non-production mode. Limits: 60 live sessions, 60 new sessions per hour, 8-hour sessions, 9 AI calls per session. See [Live Demo: How It Works and Its Limits](#live-demo-how-it-works-and-its-limits). |
+| **AI** | Gemini or Morpheus, chosen by `AI_PROVIDER`. Off by default: rules run first, and AI is cached and budgeted. |
+
+### Checks run for this update
+
+| Check | Result |
+|---|---|
+| Backend unit tests | **234 passed** |
+| Backend PostgreSQL integration tests (isolated local database) | **58 passed** — 292 in the full backend suite, in about 97 seconds |
+| Browser tests (Playwright, including axe accessibility checks) | **48 passed** |
+| TypeScript type check · ruff lint | clean · clean |
+| Repository validator (spec artifacts, schema examples, SQL inventory) | pass |
+| **Organizer scorer**, 520-email sample, offline (`ai_fallback: false`) | **1.000** — 46 / 46 defects with exact fields, 20 / 20 review cases escalated, 520 emails in 6.7 seconds |
+| Independent 60-email held-out set | Rules only **48 %** (abstains rather than guessing) · with live AI **95 %** *(last measured earlier; no classification, extraction, comparison or parsing code has changed since)* |
+
+The 1.000 is a **sample-only** result; read it together with the held-out row and the [Known Limitations](#known-limitations). The hosted site's `/health`, `/ready` and same-origin API proxy were also probed with read-only requests; the full hosted journey was not re-run end to end for this update.
+
+### What changed most recently
+
+| Commit | Change |
+|---|---|
+| [`259b5dc`](https://github.com/TEE123754/DraftWise/commit/259b5dc) | Complete UI overhaul ("Version B" glass-style design) and a stricter `.gitignore` |
+| [`15dcc94`](https://github.com/TEE123754/DraftWise/commit/15dcc94) · [`6dd2906`](https://github.com/TEE123754/DraftWise/commit/6dd2906) · [`2e0c88d`](https://github.com/TEE123754/DraftWise/commit/2e0c88d) | Root `railway.json` for Docker deploys, the Vercel + Railway deployment guide, and a fix that made the site-URL resolution safe for Vercel builds |
+| [`8367cea`](https://github.com/TEE123754/DraftWise/commit/8367cea) | Sample bundle embedded in the backend so cloud demo sessions can seed themselves |
+| [`abc3357`](https://github.com/TEE123754/DraftWise/commit/abc3357) | Demo cookie issued as `SameSite=None; Secure` for an HTTPS site calling another HTTPS site |
+| [`4613e16`](https://github.com/TEE123754/DraftWise/commit/4613e16) | `/api/v1` proxied through the Vercel origin so the demo cookie is first-party (Safari, Firefox strict mode, private windows) |
+| [`e3671b0`](https://github.com/TEE123754/DraftWise/commit/e3671b0) | Demo caps made configurable and raised from a hard-coded 20 to 60 |
+
+### Still open
+
+Gmail sync, a fresh held-out evaluation, a live AI provider quality run, per-visitor (rather than global) demo rate limits and end-to-end deployed smoke tests. Details are in [Known Limitations](#known-limitations).
 
 ---
 
 ## Hackathon Alignment
 
 ### Problem statement coverage
+
+*The problem statement itself, and our approach to it, are summarised in [The Problem and How We Tackle It](#the-problem-and-how-we-tackle-it).*
 
 The use case asks for a system that starts from an inbox, decides which emails need action, reads the attached SI and BL, compares seven fields, and escalates anything it cannot resolve. The table below maps each requirement to what DraftWise does.
 
@@ -362,7 +586,7 @@ The use case asks for a system that starts from an inbox, decides which emails n
 | **End-to-end functionality** | Live demo: open a sample email → documents linked → seven-field comparison → correction preview → returned draft analysis. Backed by an API + worker + database journey test. |
 | **Architecture & scalability** | Typed service boundaries, durable `processing_jobs` with `SKIP LOCKED` leasing and fencing, tenant isolation with Row Level Security. See [System Architecture](#system-architecture). |
 | **Technology integration** | Next.js ↔ FastAPI ↔ Supabase (Auth, Storage, PostgreSQL) ↔ Gemini / Morpheus, plus Tesseract OCR, all connected and deployed. |
-| **Engineering quality & robustness** | 228 backend unit tests, 58 PostgreSQL integration tests, Playwright browser tests with axe accessibility checks, ruff, CI on every push. See [Benchmark & Validation Results](#benchmark--validation-results). |
+| **Engineering quality & robustness** | 234 backend unit tests, 58 PostgreSQL integration tests, 48 Playwright browser tests with axe accessibility checks, ruff, CI on every push. See [Benchmark & Validation Results](#benchmark--validation-results). |
 | **Solution effectiveness & value** | The amendment cycle: regression detection, exact-scope correction previews, one-question-at-a-time next actions. See [Signature Workflows](#signature-workflows). |
 | **User experience & differentiation** | Attention-first inbox, evidence viewer, explainable states, page-aware assistant, keyboard-accessible tooltips, mobile layouts verified at 390 / 768 / 1440 px. |
 | **Impact & future potential** | Approved equivalence memory (scoped per customer), drift monitoring against a reviewed baseline, Gmail connection, workspace-level AI budgets. |
@@ -462,7 +686,7 @@ Nothing stops at a text summary. Each stage writes its output and enqueues the n
 | Page-aware assistant | Floating chat that knows which email or case is open, answers from authorised workspace data with citations, and uses rules before any AI. |
 | Customisable dashboard | Toggle and reorder panels, saved per workspace; every count drills down. |
 | Trash & retention | 30-day restorable Trash, retention purges, and durable Storage cleanup. |
-| No-login demo | Isolated, expiring sandbox workspace seeded from the supplied sample data. |
+| No-login demo | Isolated, 8-hour sandbox workspace seeded from the supplied sample data, with capped capacity and a small AI allowance. See [Live Demo: How It Works and Its Limits](#live-demo-how-it-works-and-its-limits). |
 | Gmail connection | Google OAuth connect with `gmail.readonly` scope, encrypted tokens and revocation (see [Known Limitations](#known-limitations) for sync status). |
 | Analytics | Organizer-scorer results, AI classifier accuracy panel, and AI usage against budget. |
 | Benchmark harness | Reproducible offline runner, schema-validated submission export, aggregate-only scoring. |
@@ -811,9 +1035,9 @@ final_score = 0.30 × stage1.macro_f1
 | Run | Final score | Classification | Defect precision / recall | Exact defect fields | Review precision |
 |---|---|---|---|---|---|
 | `organizer-eval-01` (first measurement) | 0.607 | 94.0 % | 100 % / 60.9 % | 16 / 46 | 11.7 % |
-| `organizer-eval-04` (latest, offline, `ai_fallback: false`) | **1.000** | 100 % | 100 % / 100 % | 46 / 46 | 100 % (20 sent, 20 needed) |
+| `organizer-eval-05` (latest: 21 Sep 2026 at commit `e3671b0`, offline, `ai_fallback: false`) | **1.000** | 100 % | 100 % / 100 % | 46 / 46 | 100 % (20 sent, 20 needed) |
 
-The latest run processed all 520 emails in about 4 seconds with no provider calls: 220 `BL_COMPARISON`, 125 `SI_REQUEST`, 75 `INVOICE_QUERY`, 60 `GENERAL`, 40 `SPAM`.
+The latest run processed all 520 emails in 6.7 seconds with no provider calls: 220 `BL_COMPARISON`, 125 `SI_REQUEST`, 75 `INVOICE_QUERY`, 60 `GENERAL`, 40 `SPAM`. Its outcomes were 454 `OK`, 46 `MISMATCH` and 20 `NEEDS_REVIEW`.
 
 > **Read this before quoting 1.000.** It is a result on the supplied sample only. Several classifier phrase lists were derived from this dataset's wording, and each fix came from reading the input documents, not the answer key. Treat it as a regression gate, not a generalisation claim.
 
@@ -833,9 +1057,9 @@ Rules alone did **not** generalise: they abstained on about half the held-out em
 
 | Suite | Scope | Command |
 |---|---|---|
-| Backend unit | 228 tests: verifier, parsers, grounding, classification, email state, rules, previews, revision analysis … | `uv run pytest tests/unit -q` |
+| Backend unit | 234 tests: verifier, parsers, grounding, classification, email state, rules, previews, revision analysis … | `uv run pytest tests/unit -q` |
 | Backend integration | 58 tests against real PostgreSQL: tenant isolation, concurrency, lease recovery, worker restart, amendment journey, storage cleanup | `node tools/postgres/run-tests.mjs` |
-| Browser | Playwright with axe accessibility checks: inbox, dashboard, amendment regression, field review, public pages, layouts | `pnpm test:e2e` |
+| Browser | 48 Playwright tests with axe accessibility checks: inbox, dashboard, amendment regression, field review, public pages, layouts | `pnpm test:e2e` |
 | Repository | File inventory, Markdown links, JSON syntax, schema examples, SQL inventory | `python scripts/validate_repository.py` |
 
 CI (`.github/workflows/test-application.yml`) runs the backend suite against PostgreSQL 18, ruff, repository validation, the frontend production build and the Playwright suite on every push and pull request.
@@ -938,7 +1162,7 @@ CI (`.github/workflows/test-application.yml`) runs the backend suite against Pos
 │                                      # validate_repository.py, …
 ├── docker/                            # backend.Dockerfile, frontend.Dockerfile, compose.dev.yml
 ├── tools/postgres/                    # Isolated local PostgreSQL test runner
-├── docs/                              # Specifications, architecture, operations, plans
+├── docs/                              # Specifications, architecture, operations, plans; brand image in docs/assets/
 ├── .github/workflows/                 # test-application.yml, validate-specification.yml
 ├── railway.json                       # Railway build + health check (Dockerfile, /health)
 ├── IMPLEMENTATION_PLAN.md             # Master checklist and measured results
@@ -1050,7 +1274,11 @@ DERIVED_RETENTION_DAYS=7
 # Demo
 DEMO_ENABLED=false
 DEMO_DATASET_PATH=                      # optional; falls back to backend/data/sdoc-hackathon-bundle.zip
-DEMO_AI_CALL_LIMIT=9                    # live AI calls one demo session may make
+DEMO_AI_CALL_LIMIT=9                    # live AI calls one demo session may make (0-30)
+DEMO_AI_ENABLED=true                    # false: demo sessions never call AI
+DEMO_MAX_SESSIONS=60                    # demo sessions alive at once, 8 h each (1-1000)
+DEMO_MAX_SESSIONS_PER_HOUR=60           # demo sessions started per hour, all visitors combined (1-1000)
+DEMO_OFFLINE_PROCESSING=true            # read seeded comparison emails in the background, rules only
 
 # Gmail (optional; all three required to connect a mailbox)
 GOOGLE_CLIENT_ID=
@@ -1079,7 +1307,7 @@ SITE_URL=http://localhost:3000          # used for SEO metadata; set to the prod
 
 1. Create a Railway project from `TEE123754/DraftWise`.
 2. Railway reads the root [`railway.json`](railway.json), which selects `docker/backend.Dockerfile` and sets the health check to `/health` with an on-failure restart policy.
-3. Add the backend variables above in **Railway → Variables** (`ENVIRONMENT=production`, `ALLOWED_ORIGINS=https://<your-app>.vercel.app`, …).
+3. Add the backend variables above in **Railway → Variables**. For a deployment with the public demo use `ENVIRONMENT=development` and `DEMO_ENABLED=true`: the demo refuses to run when `ENVIRONMENT=production`, which is the stricter mode (HTTPS-only CORS, no demo) for a deployment without one. Set `ALLOWED_ORIGINS` to your Vercel domain(s) over `https://`.
 4. Under **Settings → Networking**, generate a public domain and use it as `NEXT_PUBLIC_API_URL` in Vercel.
 5. **Add the worker as a second service.** Create another service from the same repository, give it the same variables, and set its start command to `python -m app.workers.runner`. The image's default command starts only the API, and the worker is what reads documents and runs the checks: without one, `/ready` returns `503` and emails stay at *documents not read yet*. The worker exposes no HTTP port, so the `/health` health check in `railway.json` does not suit it; give that service its own config or clear the health check in its settings.
 
@@ -1089,8 +1317,8 @@ The container starts `uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}` 
 
 1. Import the repository and set the **Root Directory** to `frontend`.
 2. Framework preset **Next.js**; the build command is `pnpm build` (detected from `pnpm-lock.yaml`).
-3. Set `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SITE_URL`.
-4. Back on Railway, set `ALLOWED_ORIGINS` to include both the production and preview domains, comma-separated.
+3. Set `NEXT_PUBLIC_API_URL` (an `https://` URL, **before the build** — it switches on the same-origin proxy), `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SITE_URL`.
+4. Back on Railway, set `ALLOWED_ORIGINS` to include both the production and preview domains, comma-separated. The demo endpoints check the request `Origin` header, so the Vercel domain must be listed even though the browser reaches the API through the proxy.
 
 ### Post-deploy check
 
@@ -1098,6 +1326,7 @@ The container starts `uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}` 
 |---|---|
 | `GET https://<railway-domain>/health` | `{"status":"ok","version":"pipeline-v1"}` |
 | `GET https://<railway-domain>/ready` | `{"status":"ready","database":"ok","worker":"active"}` |
+| `POST https://<vercel-domain>/api/v1/demo/session` with a foreign `Origin` header | `403 ORIGIN_FORBIDDEN` — the demo is enabled and the proxy works. (`404 DEMO_UNAVAILABLE` means `DEMO_ENABLED` is off or `ENVIRONMENT=production`.) Creates nothing. |
 | Open the Vercel URL | Landing page renders; **Try Demo** reaches a populated inbox |
 | Open a sample email | Documents, fields and comparison load from the backend |
 
@@ -1105,31 +1334,10 @@ Full guide: [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) · Free-tier li
 
 ---
 
-## Trying the Product
-
-### No-login demo (fastest)
-
-1. Open **[draft-wise-gold.vercel.app](https://draft-wise-gold.vercel.app/)** and click **Try Demo**.
-2. You land in an isolated, expiring sandbox workspace seeded from the supplied sample inbox (all 520 emails, 250 attachments). Nothing you do is visible to other visitors.
-3. Suggested tour:
-   1. **Inbox** — filter by state; note the reason chips and the recommended action on each row.
-   2. Open a **Mismatch found** email → open its case → see the seven fields side by side with source quotes.
-   3. Choose **Preview correction request** → review *Current BL → Required by SI* and the remaining-issue forecast.
-   4. Open a **Needs documents** email → try the reply template or link an existing document.
-   5. **Alerts** — inspect a spam / phishing signal and its source evidence.
-   6. **Analytics** — see the organizer-scorer result and the AI classifier panel, both labelled with their sample size.
-   7. Ask the **assistant** (bottom-right) "what needs my attention?" or, while an email is open, "what should I do here?".
-4. Click **End demo** to revoke the session. Demo sessions expire after eight hours. Rules do the work by default; AI runs only when you ask for it, within a small per-session allowance.
-
-### Signed-in workspace
-
-Sign in on `/sign-in` with your email address; Supabase Auth sends a one-time code / link. On first login DraftWise creates a private admin workspace for you. There are no shared demo credentials.
-
----
-
 ## API Reference
 
-Base URL (local): `http://localhost:8000` · REST prefix: `/api/v1` · Interactive docs: `/docs`
+Base URL (local): `http://localhost:8000` · REST prefix: `/api/v1` · Interactive docs: `/docs`  
+In production the same routes are also reachable through the site's own origin, `https://draft-wise-gold.vercel.app/api/v1/…`, which Vercel forwards to Railway.
 
 Health endpoints are unauthenticated and live at the root. Business endpoints require `Authorization: Bearer <Supabase JWT>` and `X-Workspace-Id`. Demo sessions use an HttpOnly cookie and `X-Demo-Mode: true`. Errors are typed (`DomainError` with a code, message and retryable flag).
 
@@ -1268,7 +1476,7 @@ Large artefacts belong in Storage, not PostgreSQL JSONB. Every child row carries
 |---|---|
 | Authentication | Supabase asymmetric JWTs (ES256 / RS256) verified through the project JWKS; legacy HS256 unsupported |
 | Authorisation | Workspace membership on every business request; role-specific write permissions; cross-workspace reads and writes covered by isolation tests |
-| Demo isolation | HttpOnly session cookie (hashed at rest), dedicated sandbox workspace, origin checks, 8-hour expiry, capped provisioning, small AI allowance |
+| Demo isolation | HttpOnly session cookie (only its SHA-256 hash is stored; `SameSite=None; Secure` over HTTPS), dedicated sandbox workspace, origin checks, 8-hour expiry, capped provisioning (60 live, 60 per hour), a 9-call AI allowance, and it refuses to run when `ENVIRONMENT=production` |
 | Uploads | Signature / MIME / extension agreement; size and page limits; OOXML expansion checks; path-traversal and symlink rejection on dataset import |
 | Parsing | Bounded time and memory; parsers run without network access or shell interpolation; PDF links, Office relationships and spreadsheet formulas are treated as untrusted data |
 | AI | No tools, secrets or database access for model clients; strict schemas; source grounding; per-workspace budget; provider keys never accepted from email text, documents or query parameters |
@@ -1292,6 +1500,19 @@ The API is up but no worker heartbeat was seen in the last 60 seconds. Start the
 Check `curl http://localhost:8000/health`, confirm `NEXT_PUBLIC_API_URL`, and make sure `ALLOWED_ORIGINS` on the backend includes the exact frontend origin (HTTPS in production, and the Vercel preview domain if you use it).
 
 If the demo dashboard shows "Workspace summary unavailable" with "Open the demo to start a session", the demo cookie was not sent back. On Vercel, `NEXT_PUBLIC_API_URL` must be an `https://` URL set before the build: the frontend then proxies `/api/v1/*` to the backend through its own origin. Redeploy Vercel after changing it.
+
+### The demo will not start, or stops working
+
+| What you see | Meaning and fix |
+|---|---|
+| `429` *Demo capacity reached.* | All `DEMO_MAX_SESSIONS` slots (default 60) are in use. Sessions free their slot when they expire or are ended. Try later, or raise the limit if your database allows. |
+| `429` *Demo creation limit reached. Try again in an hour.* | `DEMO_MAX_SESSIONS_PER_HOUR` (default 60, shared by all visitors) was reached. |
+| `401` *Demo session expired. Open the demo again.* | The 8-hour session ended. Start a new one. |
+| `401` *Open the demo to start a session.* | The cookie was not sent back. On Vercel, `NEXT_PUBLIC_API_URL` must be an `https://` URL set before the build (same-origin proxy). Redeploy after changing it. |
+| `403` `ORIGIN_FORBIDDEN` | The request's `Origin` is not in `ALLOWED_ORIGINS`. Add the exact frontend origin, including any preview domain. |
+| `404` `DEMO_UNAVAILABLE` | `DEMO_ENABLED` is not `true`, or `ENVIRONMENT=production` (the demo refuses to run there). |
+| `503` *The input bundle is not configured* | `DEMO_DATASET_PATH` is unset and `backend/data/sdoc-hackathon-bundle.zip` is missing. |
+| Inbox rows never leave *documents not read yet* | The worker is not running. Check `/ready`. |
 
 ### Sign-in redirects fail
 
@@ -1337,7 +1558,9 @@ DraftWise is a hackathon prototype. These are stated plainly so results are not 
 
 - **1.000 is a sample-only score.** Rules-only classification on the independent 60-email held-out set was 48 % (with abstention, not wrong answers), and live-AI classification was 95 %. A fresh held-out set with new wording has not been built yet, and no independently reviewed accuracy evaluation exists.
 - **Gmail import is not complete.** OAuth connect, encrypted token storage and revocation work, but `POST /gmail/connections/{id}/sync` only marks the connection as syncing and does not fetch mail yet. The demo's **sample fetch** is a labelled simulator, not a real Gmail connection.
-- **Deployment acceptance is partial.** The Vercel frontend is live; container runs against the hosted stack, byte-level Storage immutability checks and real-user JWT / RLS journeys are not all recorded as passing yet.
+- **Deployment acceptance is partial.** The Vercel frontend and Railway API are live, and their health, readiness and same-origin proxy answer correctly. A full end-to-end journey on the hosted stack, byte-level Storage immutability checks and real-user JWT / RLS journeys are not all recorded as passing yet.
+- **Demo capacity is shared and finite.** At most 60 demo sessions are alive at once and 60 may start per hour across **all** visitors combined, not per person. A session holds its slot until it expires or is ended. A session that uploaded its own file is not purged automatically, so it keeps its slot until an administrator cleans it. Each session holds its own copy of the sample data in the database.
+- **The demo runs in non-production mode.** It refuses to start when `ENVIRONMENT=production`, so the hosted demo runs with the stricter production checks off (HTTPS-only CORS is then a convention we follow, not something the server enforces).
 - **Provider quality and cost.** Document-level accuracy of Gemini / Morpheus and free-tier eligibility have not been established; live AI calls are budgeted and off by default.
 - **Free-tier ceilings apply.** Railway, Supabase, Vercel Hobby and Gemini quotas bound a free deployment; it cannot honestly guarantee perpetual always-on production service at zero cost.
 - **Dataset rights.** The organizer's participant bundle (sample inbox emails and attachments; no answer key) is committed at `backend/data/sdoc-hackathon-bundle.zip` so the hosted demo can seed itself. It is supplied hackathon material, so confirm redistribution is permitted before keeping it in a public repository; if it is not, remove it and point `DEMO_DATASET_PATH` at a locally held copy or a redacted seed.
@@ -1350,7 +1573,7 @@ DraftWise is a hackathon prototype. These are stated plainly so results are not 
 - Finish Gmail incremental sync (history cursor, bounded first import, duplicate protection).
 - Build a fresh held-out set and run a live provider evaluation.
 - Add rate limiting on sign-in, upload and AI endpoints.
-- Move to a dedicated worker service when traffic warrants it.
+- Make demo rate limits per visitor instead of global, and purge sessions that uploaded files.
 - Add real-device touch testing and container / deployed smoke tests to CI.
 
 ---
@@ -1383,6 +1606,8 @@ After local setup, walk the full pipeline:
 - [ ] `GET /health` returns `"status": "ok"` and `GET /ready` returns `"worker": "active"`
 - [ ] Frontend opens at `http://localhost:3000` and the public pages (`/`, `/workflow`, `/pricing`, `/privacy`, `/terms`) render without signing in
 - [ ] **Try Demo** reaches a populated inbox with no account
+- [ ] Reopening `/demo` resumes the same session; **End demo** expires it and clears the cookie
+- [ ] At the demo limits the app shows a clear `429` message instead of failing silently
 - [ ] Inbox filters by state; counts across all states sum to the number of emails
 - [ ] No BL-comparison email shows green unless a comparison actually passed
 - [ ] A mismatch case shows exactly the differing field(s) with SI and BL values and source quotes
