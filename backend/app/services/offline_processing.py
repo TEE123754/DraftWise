@@ -10,7 +10,11 @@ Queueing is a handful of statements however many emails there are: a hosted data
 
 from psycopg.types.json import Jsonb
 
-from app.repositories.jobs import digest
+from app.repositories.jobs import PRIORITY_BULK_HEAD, PRIORITY_BULK_TAIL, digest
+
+# The first emails of a bulk read are queued ahead of everyone else's remaining bulk work, so a person
+# who has just opened the demo sees the first results at once however busy the workers are.
+HEAD_EMAILS = 12
 
 # Comparison emails that have documents nobody has read yet, and no job already running for them,
 # with the IDs of their (validated) attachments.
@@ -46,9 +50,9 @@ order by e.created_at,
 # arbitrary order. `seq` spaces them a millisecond apart so the mailbox is read in inbox order
 # (email_001 first): the first emails a visitor opens are the first ones to be checked.
 CREATE_JOBS_SQL = """
-insert into public.processing_jobs(workspace_id,email_id,kind,idempotency_key,request_sha256,payload,created_at)
-select %s, x.email_id, 'extract', x.key, x.sha, x.payload, now() + x.seq * interval '1 millisecond'
-from jsonb_to_recordset(%s) as x(email_id uuid, key text, sha text, payload jsonb, seq int)
+insert into public.processing_jobs(workspace_id,email_id,kind,idempotency_key,request_sha256,payload,created_at,priority)
+select %s, x.email_id, 'extract', x.key, x.sha, x.payload, now() + x.seq * interval '1 millisecond', x.priority
+from jsonb_to_recordset(%s) as x(email_id uuid, key text, sha text, payload jsonb, seq int, priority int)
 on conflict(workspace_id,kind,idempotency_key) do nothing
 returning id, email_id
 """
@@ -83,6 +87,7 @@ async def queue_offline_processing(connection, workspace_id, email_id=None) -> d
                 "sha": digest(payload),
                 "payload": payload,
                 "seq": seq,
+                "priority": PRIORITY_BULK_HEAD if seq < HEAD_EMAILS else PRIORITY_BULK_TAIL,
             }
         )
     created = await (await connection.execute(CREATE_JOBS_SQL, (workspace_id, Jsonb(requests)))).fetchall()

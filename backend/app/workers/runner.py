@@ -11,6 +11,7 @@ from app.ai.provider import create_provider
 from app.config import Settings
 from app.domain.errors import DomainError
 from app.infrastructure.database import Database
+from app.infrastructure.hosting import hosting_kind
 from app.infrastructure.storage import Storage
 from app.repositories.jobs import claim, fail, fence, finish, recover
 from app.services.demo_retention import purge_expired_samples
@@ -25,8 +26,9 @@ DATABASE_ERRORS = (OperationalError, InterfaceError, PoolTimeout)
 async def heartbeat(database, worker_id, job=None):
     async with database.connection() as connection:
         await connection.execute(
-            "insert into public.worker_heartbeats(id,last_seen) values(%s,now()) on conflict(id) do update set last_seen=now()",
-            (worker_id,),
+            """insert into public.worker_heartbeats(id,last_seen,kind) values(%s,now(),%s)
+            on conflict(id) do update set last_seen=now(),kind=excluded.kind""",
+            (worker_id, hosting_kind()),
         )
         await connection.execute(
             "delete from public.worker_heartbeats where last_seen<now()-interval '1 day'"
@@ -56,7 +58,8 @@ async def execute_job(database, handlers, worker_id, job):
         async with database.connection() as connection:
             await fence(connection, job)
             result = await handlers.persist(connection, job, prepared)
-            await finish(connection, job, result)
+            # The fence above holds the job row's lock for this whole transaction.
+            await finish(connection, job, result, fenced=True)
     except Exception as exc:
         error = (
             exc

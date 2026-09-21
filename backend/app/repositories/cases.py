@@ -63,19 +63,17 @@ async def project_report(connection, job, report, si_id, bl_id):
             policy_version=case["policy_version"],
             previous_policy_version=case["policy_version"] if previous else None,
         )
-        cursor = await connection.execute(
-            "select coalesce(max(round_number),0)+1 as round from public.amendment_rounds where workspace_id=%s and case_id=%s",
-            (workspace, case["id"]),
-        )
-        round_number = (await cursor.fetchone())["round"]
         await connection.execute(
             """insert into public.amendment_rounds(workspace_id,case_id,baseline_version,round_number,si_extraction_id,previous_bl_id,new_bl_id,previous_report_id,new_report_id,policy_version,summary)
-            values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) on conflict(workspace_id,case_id,baseline_version,new_bl_id,policy_version) do nothing""",
+            select %s,%s,%s,
+              (select coalesce(max(round_number),0)+1 from public.amendment_rounds where workspace_id=%s and case_id=%s),
+              %s,%s,%s,%s,%s,%s,%s on conflict(workspace_id,case_id,baseline_version,new_bl_id,policy_version) do nothing""",
             (
                 workspace,
                 case["id"],
                 case["baseline_version"],
-                round_number,
+                workspace,
+                case["id"],
                 si_id,
                 summary.previous_bl_id,
                 bl_id,
@@ -85,39 +83,40 @@ async def project_report(connection, job, report, si_id, bl_id):
                 Jsonb(summary.model_dump(mode="json")),
             ),
         )
-    for row in report.comparisons:
-        if row.decision == "match":
-            await connection.execute(
-                """update public.case_issues set state='resolved',resolved_report_id=%s,updated_at=now()
-                where workspace_id=%s and case_id=%s and baseline_version=%s and field=%s and state='open'""",
-                (report.id, workspace, case["id"], case["baseline_version"], row.field.value),
-            )
-        else:
-            kind = (
-                "mismatch"
-                if row.decision == "mismatch"
-                else ("missing" if row.decision == "missing" else "ambiguous")
-            )
-            await connection.execute(
-                """insert into public.case_issues(workspace_id,case_id,baseline_version,field,kind,source_report_id,evidence)
-                values(%s,%s,%s,%s,%s,%s,%s) on conflict(workspace_id,case_id,baseline_version,field) where state='open'
-                do update set source_report_id=excluded.source_report_id,evidence=excluded.evidence,kind=excluded.kind,updated_at=now()""",
-                (
-                    workspace,
-                    case["id"],
-                    case["baseline_version"],
-                    row.field.value,
-                    kind,
-                    report.id,
-                    Jsonb(list(row.evidence_ids)),
-                ),
-            )
+    # One statement for every field that now matches and one for every field that does not, rather
+    # than one per field: each round trip to a hosted database costs ~100 ms.
+    matched = [row.field.value for row in report.comparisons if row.decision == "match"]
+    if matched:
+        await connection.execute(
+            """update public.case_issues set state='resolved',resolved_report_id=%s,updated_at=now()
+            where workspace_id=%s and case_id=%s and baseline_version=%s and field::text=any(%s) and state='open'""",
+            (report.id, workspace, case["id"], case["baseline_version"], matched),
+        )
+    open_issues = [
+        {
+            "field": row.field.value,
+            "kind": "mismatch"
+            if row.decision == "mismatch"
+            else ("missing" if row.decision == "missing" else "ambiguous"),
+            "evidence": list(row.evidence_ids),
+        }
+        for row in report.comparisons
+        if row.decision != "match"
+    ]
+    if open_issues:
+        await connection.execute(
+            """insert into public.case_issues(workspace_id,case_id,baseline_version,field,kind,source_report_id,evidence)
+            select %s,%s,%s,x.field::public.field_name,x.kind,%s,x.evidence
+            from jsonb_to_recordset(%s) as x(field text,kind text,evidence jsonb)
+            on conflict(workspace_id,case_id,baseline_version,field) where state='open'
+            do update set source_report_id=excluded.source_report_id,evidence=excluded.evidence,kind=excluded.kind,updated_at=now()""",
+            (workspace, case["id"], case["baseline_version"], report.id, Jsonb(open_issues)),
+        )
     state = case_readiness(report, has_si=bool(si_id), has_bl=bool(bl_id))
     await connection.execute(
-        "update public.cases set latest_report_id=%s,readiness=%s,version=version+1,updated_at=now() where workspace_id=%s and id=%s",
-        (report.id, state, workspace, case["id"]),
-    )
-    await connection.execute(
-        "update public.amendment_drafts set state='stale' where workspace_id=%s and case_id=%s and state='draft'",
-        (workspace, case["id"]),
+        """with updated as (
+            update public.cases set latest_report_id=%s,readiness=%s,version=version+1,updated_at=now()
+            where workspace_id=%s and id=%s returning id)
+        update public.amendment_drafts set state='stale' where workspace_id=%s and case_id=%s and state='draft'""",
+        (report.id, state, workspace, case["id"], workspace, case["id"]),
     )

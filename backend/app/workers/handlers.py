@@ -8,7 +8,7 @@ from app.ai.grounding import ground_extraction
 from app.domain.errors import DomainError
 from app.domain.models import Extraction, FieldName, VerificationReport
 from app.infrastructure.parsing import parse_bounded
-from app.repositories.jobs import digest, enqueue
+from app.repositories.jobs import PRIORITY_REQUESTED, digest, enqueue
 from app.services.bounded_ai import BoundedAI
 from app.services.classification import Classification, classify_explicit, segment_email
 from app.services.disambiguation import email_senses, field_senses
@@ -57,24 +57,30 @@ class Handlers:
             return await Handlers(self.database, self.storage, self.settings, provider).prepare(
                 {**job, "_demo_checked": True}
             )
+        attachments = verification_inputs = None
+        # One transaction reads everything the job needs from the database. Each transaction and each
+        # statement is a network round trip to a hosted database, so they are kept to a minimum.
         async with self.database.connection() as connection:
             email_ids = [job["email_id"]] if job.get("email_id") else []
             if job["kind"] == "extract":
                 rows = await (
                     await connection.execute(
-                        "select distinct email_id from public.attachments where workspace_id=%s and id=any(%s)",
+                        "select * from public.attachments where workspace_id=%s and id=any(%s)",
                         (job["workspace_id"], [UUID(x) for x in job["payload"]["attachment_ids"]]),
                     )
                 ).fetchall()
                 email_ids += [r["email_id"] for r in rows]
+                attachments = {str(r["id"]): r for r in rows if r["state"] == "validated"}
             for email_id in set(email_ids):
                 await require_safe(connection, job["workspace_id"], email_id)
+            if job["kind"] == "verify" and job["payload"].get("operation") == "compare":
+                verification_inputs = await self._verification_inputs(connection, job)
         if job["kind"] == "classify":
             return await self.classify(job)
         if job["kind"] == "extract":
-            return await self.extract(job)
-        if job["kind"] == "verify" and job["payload"].get("operation") == "compare":
-            return await self.verify(job)
+            return await self.extract(job, attachments)
+        if verification_inputs is not None:
+            return self.verify(job, verification_inputs)
         raise DomainError("JOB_UNSUPPORTED", "This operation is not supported by this worker")
 
     async def classify(self, job):
@@ -132,16 +138,20 @@ class Handlers:
         ]
         return {"classification": result, "metadata": metadata}
 
-    async def extract(self, job):
+    async def extract(self, job, attachments=None):
+        if attachments is None:  # called without `prepare`: read them here
+            async with self.database.connection() as connection:
+                rows = await (
+                    await connection.execute(
+                        "select * from public.attachments where workspace_id=%s and id=any(%s) and state='validated'",
+                        (job["workspace_id"], [UUID(x) for x in job["payload"]["attachment_ids"]]),
+                    )
+                ).fetchall()
+            attachments = {str(r["id"]): r for r in rows}
         items = []
         for attachment_id in job["payload"]["attachment_ids"]:
             try:
-                async with self.database.connection() as connection:
-                    cursor = await connection.execute(
-                        "select * from public.attachments where workspace_id=%s and id=%s and state='validated'",
-                        (job["workspace_id"], attachment_id),
-                    )
-                    attachment = await cursor.fetchone()
+                attachment = attachments.get(str(attachment_id))
                 if attachment is None:
                     raise DomainError("NOT_FOUND", "Attachment is not available", status=404)
                 data = await self.storage.download(attachment["storage_key"])
@@ -203,8 +213,12 @@ class Handlers:
                 items.append({"attachment_id": attachment_id, "error_code": exc.code})
         return {"items": items}
 
-    async def verify(self, job):
-        async with self.database.connection() as connection:
+    async def _verification_inputs(self, connection, job):
+        """The stored extractions, customer and approved rules a comparison is made from."""
+        explicit_ids = [
+            job["payload"].get(name) for name in ("si_extraction_id", "bl_extraction_id")
+        ]
+        if not any(explicit_ids):  # otherwise the sources are named and this would be thrown away
             cursor = await connection.execute(
                 """select distinct on(x.attachment_id) x.* from public.document_extractions x
                 join public.attachments a on a.workspace_id=x.workspace_id and a.id=x.attachment_id
@@ -213,67 +227,73 @@ class Handlers:
                 (job["workspace_id"], job["email_id"]),
             )
             rows = await cursor.fetchall()
-            explicit_ids = [
-                job["payload"].get(name) for name in ("si_extraction_id", "bl_extraction_id")
-            ]
-            if any(explicit_ids):
-                cursor = await connection.execute(
-                    """select x.* from public.document_extractions x join public.attachments a
-                    on a.workspace_id=x.workspace_id and a.id=x.attachment_id where x.workspace_id=%s and x.id=any(%s) and a.email_id=%s and a.state='validated'""",
-                    (
-                        job["workspace_id"],
-                        [UUID(value) for value in explicit_ids if value],
-                        job["email_id"],
-                    ),
+        else:
+            cursor = await connection.execute(
+                """select x.* from public.document_extractions x join public.attachments a
+                on a.workspace_id=x.workspace_id and a.id=x.attachment_id where x.workspace_id=%s and x.id=any(%s) and a.email_id=%s and a.state='validated'""",
+                (
+                    job["workspace_id"],
+                    [UUID(value) for value in explicit_ids if value],
+                    job["email_id"],
+                ),
+            )
+            rows = await cursor.fetchall()
+            if len(rows) != sum(value is not None for value in explicit_ids):
+                raise DomainError(
+                    "SOURCE_CHANGED",
+                    "The selected source revisions are unavailable",
+                    status=409,
                 )
-                rows = await cursor.fetchall()
-                if len(rows) != sum(value is not None for value in explicit_ids):
-                    raise DomainError(
-                        "SOURCE_CHANGED",
-                        "The selected source revisions are unavailable",
-                        status=409,
-                    )
-            customer_id = None
-            if job["payload"].get("customer_id"):
-                customer_id = UUID(str(job["payload"]["customer_id"]))
-            elif job["payload"].get("case_id"):
-                case_cursor = await connection.execute(
-                    "select customer_id from public.cases where workspace_id=%s and id=%s",
-                    (job["workspace_id"], UUID(str(job["payload"]["case_id"]))),
-                )
-                case_row = await case_cursor.fetchone()
-                if case_row and case_row.get("customer_id"):
-                    customer_id = case_row["customer_id"]
+        customer_id = None
+        if job["payload"].get("customer_id"):
+            customer_id = UUID(str(job["payload"]["customer_id"]))
+        elif job["payload"].get("case_id"):
+            case_cursor = await connection.execute(
+                "select customer_id from public.cases where workspace_id=%s and id=%s",
+                (job["workspace_id"], UUID(str(job["payload"]["case_id"]))),
+            )
+            case_row = await case_cursor.fetchone()
+            if case_row and case_row.get("customer_id"):
+                customer_id = case_row["customer_id"]
 
-            equivalence_rules = []
-            if customer_id:
-                rules_cursor = await connection.execute(
-                    """select id, workspace_id, customer_id, field, left_value, right_value, evidence, rationale, version, state, canonical_port_code, authority_reference
-                    from public.equivalence_rules
-                    where workspace_id=%s and customer_id=%s and state='approved'""",
-                    (job["workspace_id"], customer_id),
-                )
-                for r in await rules_cursor.fetchall():
-                    try:
-                        equivalence_rules.append(
-                            EquivalenceRule(
-                                id=r["id"],
-                                workspace_id=r["workspace_id"],
-                                customer_id=r["customer_id"],
-                                field=FieldName(r["field"]),
-                                left=r["left_value"],
-                                right=r["right_value"],
-                                evidence_ids=tuple(r["evidence"] if isinstance(r["evidence"], list) else []),
-                                rationale=r.get("rationale") or "Approved customer equivalence",
-                                version=r["version"],
-                                state=r["state"],
-                                canonical_port_code=r.get("canonical_port_code"),
-                                authority_reference=r.get("authority_reference"),
-                            )
+        equivalence_rules = []
+        if customer_id:
+            rules_cursor = await connection.execute(
+                """select id, workspace_id, customer_id, field, left_value, right_value, evidence, rationale, version, state, canonical_port_code, authority_reference
+                from public.equivalence_rules
+                where workspace_id=%s and customer_id=%s and state='approved'""",
+                (job["workspace_id"], customer_id),
+            )
+            for r in await rules_cursor.fetchall():
+                try:
+                    equivalence_rules.append(
+                        EquivalenceRule(
+                            id=r["id"],
+                            workspace_id=r["workspace_id"],
+                            customer_id=r["customer_id"],
+                            field=FieldName(r["field"]),
+                            left=r["left_value"],
+                            right=r["right_value"],
+                            evidence_ids=tuple(r["evidence"] if isinstance(r["evidence"], list) else []),
+                            rationale=r.get("rationale") or "Approved customer equivalence",
+                            version=r["version"],
+                            state=r["state"],
+                            canonical_port_code=r.get("canonical_port_code"),
+                            authority_reference=r.get("authority_reference"),
                         )
-                    except Exception:
-                        continue
+                    )
+                except Exception:
+                    continue
+        return {
+            "rows": rows,
+            "customer_id": customer_id,
+            "equivalence_rules": equivalence_rules,
+        }
 
+    def verify(self, job, inputs):
+        """Compare the stored SI and BL. Pure computation: everything it needs was read already."""
+        rows, customer_id = inputs["rows"], inputs["customer_id"]
+        equivalence_rules = inputs["equivalence_rules"]
         documents, qualities = [], {}
         for row in rows:
             extraction = Extraction.model_validate(row["output"]).model_copy(
@@ -318,8 +338,9 @@ class Handlers:
     async def persist(self, connection, job, prepared):
         # Caller holds the live job lease lock for this entire artifact transaction.
         workspace, email_id = job["workspace_id"], job["email_id"]
+        email_row = None
         if email_id:
-            await active_email(connection, workspace, email_id, lock=True)
+            email_row = await active_email(connection, workspace, email_id, lock=True)
         if job["kind"] == "classify":
             await connection.execute(
                 "select id from public.emails where workspace_id=%s and id=%s for update",
@@ -368,6 +389,7 @@ class Handlers:
                                 "workflow": True,
                                 "prefer_ai": job["payload"].get("prefer_ai", False),
                             },
+                            priority=job.get("priority", PRIORITY_REQUESTED),
                         )
                         await workflow_state(
                             connection,
@@ -438,24 +460,30 @@ class Handlers:
                         "output": extraction.model_dump(mode="json"),
                     }
                 )
-                await connection.execute(
-                    "select id from public.attachments where workspace_id=%s and id=%s for update",
-                    (workspace, attachment_id),
-                )
+                # Lock the attachment and look for an identical stored extraction in one statement.
                 cursor = await connection.execute(
-                    "select id from public.document_extractions where workspace_id=%s and attachment_id=%s and cache_key=%s",
-                    (workspace, attachment_id, cache_key),
+                    """select e.id from public.attachments a left join public.document_extractions e
+                    on e.workspace_id=a.workspace_id and e.attachment_id=a.id and e.cache_key=%s
+                    where a.workspace_id=%s and a.id=%s for update of a""",
+                    (cache_key, workspace, attachment_id),
                 )
                 existing = await cursor.fetchone()
-                if existing:
+                if existing and existing["id"]:
                     extraction_id = existing["id"]
                 else:
-                    # One statement per document: each round trip to a hosted database costs ~100 ms.
+                    # The blocks and the extraction go in as one statement: each round trip to a
+                    # hosted database costs ~100 ms. The revision is taken under the attachment lock.
+                    extraction_id = uuid4()
                     await connection.execute(
-                        """insert into public.source_blocks(id,workspace_id,attachment_id,parser_version,ordinal,text_content,locator,quality)
-                        select x.id,%s,%s,%s,x.ordinal,x.text,x.locator,x.quality
-                        from jsonb_to_recordset(%s) as x(id uuid,ordinal integer,text text,locator jsonb,quality numeric)
-                        on conflict(workspace_id,attachment_id,parser_version,ordinal) do nothing""",
+                        """with blocks as (
+                            insert into public.source_blocks(id,workspace_id,attachment_id,parser_version,ordinal,text_content,locator,quality)
+                            select x.id,%s,%s,%s,x.ordinal,x.text,x.locator,x.quality
+                            from jsonb_to_recordset(%s) as x(id uuid,ordinal integer,text text,locator jsonb,quality numeric)
+                            on conflict(workspace_id,attachment_id,parser_version,ordinal) do nothing returning 1)
+                        insert into public.document_extractions(id,workspace_id,attachment_id,revision,document_type,schema_version,cache_key,output,run_metadata)
+                        select %s,%s,%s,
+                          (select coalesce(max(revision),0)+1 from public.document_extractions where workspace_id=%s and attachment_id=%s),
+                          %s::public.document_role,'v1',%s,%s,%s""",
                         (
                             workspace,
                             attachment_id,
@@ -472,22 +500,11 @@ class Handlers:
                                     for ordinal, block in enumerate(document.blocks)
                                 ]
                             ),
-                        ),
-                    )
-                    cursor = await connection.execute(
-                        "select coalesce(max(revision),0)+1 as revision from public.document_extractions where workspace_id=%s and attachment_id=%s",
-                        (workspace, attachment_id),
-                    )
-                    revision = (await cursor.fetchone())["revision"]
-                    extraction_id = uuid4()
-                    await connection.execute(
-                        """insert into public.document_extractions(id,workspace_id,attachment_id,revision,document_type,schema_version,cache_key,output,run_metadata)
-                        values(%s,%s,%s,%s,%s,'v1',%s,%s,%s)""",
-                        (
                             extraction_id,
                             workspace,
                             attachment_id,
-                            revision,
+                            workspace,
+                            attachment_id,
                             extraction.document_type,
                             cache_key,
                             Jsonb(extraction.model_dump(mode="json")),
@@ -518,12 +535,7 @@ class Handlers:
                 ).fetchall()
                 si = [r for r in rows if r["document_type"] == "SI"]
                 bl = [r for r in rows if r["document_type"] == "BL"]
-                email = await (
-                    await connection.execute(
-                        "select external_id from public.emails where workspace_id=%s and id=%s for update",
-                        (workspace, email_id),
-                    )
-                ).fetchone()
+                email = email_row  # already locked above; its external_id names a new case
                 case = await (
                     await connection.execute(
                         "select * from public.cases where workspace_id=%s and email_id=%s for update",
@@ -563,6 +575,7 @@ class Handlers:
                             "bl_extraction_id": str(bl[0]["id"]),
                             "policy_version": "v1",
                         },
+                        priority=job.get("priority", PRIORITY_REQUESTED),
                     )
                     await workflow_state(
                         connection, job, "checking", {"extractions": results}, next_job, case["id"]
@@ -580,23 +593,21 @@ class Handlers:
                     )
             return {"items": results}
         if job["kind"] == "verify":
-            await connection.execute(
-                "select id from public.emails where workspace_id=%s and id=%s for update",
-                (workspace, email_id),
-            )
+            # The email row is already locked above. One statement answers both "was this exact
+            # comparison already stored?" and "what would the next revision be?".
             cursor = await connection.execute(
-                "select id,report from public.verification_reports where workspace_id=%s and email_id=%s and input_fingerprint=%s",
-                (workspace, email_id, prepared["input_fingerprint"]),
+                """select r.id,r.report,
+                (select coalesce(max(revision),0)+1 from public.verification_reports
+                 where workspace_id=%s and email_id=%s) as revision
+                from (select 1) one left join public.verification_reports r
+                on r.workspace_id=%s and r.email_id=%s and r.input_fingerprint=%s""",
+                (workspace, email_id, workspace, email_id, prepared["input_fingerprint"]),
             )
             existing = await cursor.fetchone()
-            if existing:
+            revision = existing["revision"]
+            if existing["id"]:
                 report = VerificationReport.model_validate(existing["report"])
             else:
-                cursor = await connection.execute(
-                    "select coalesce(max(revision),0)+1 as revision from public.verification_reports where workspace_id=%s and email_id=%s",
-                    (workspace, email_id),
-                )
-                revision = (await cursor.fetchone())["revision"]
                 report = prepared["report"].model_copy(update={"revision": revision})
                 await connection.execute(
                     """insert into public.verification_reports(id,workspace_id,email_id,si_extraction_id,bl_extraction_id,revision,status,complete,confidence,comparison_version,input_fingerprint,review_reasons,report)

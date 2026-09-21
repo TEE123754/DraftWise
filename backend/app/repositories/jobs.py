@@ -6,6 +6,10 @@ from psycopg.types.json import Jsonb
 
 from app.domain.errors import DomainError
 
+# Smaller runs sooner. A person asked for it; the first emails of a bulk read (so a new visitor sees
+# results at once); the rest of a bulk read.
+PRIORITY_REQUESTED, PRIORITY_BULK_HEAD, PRIORITY_BULK_TAIL = 10, 20, 30
+
 
 def digest(payload: dict) -> str:
     return hashlib.sha256(
@@ -21,12 +25,13 @@ async def enqueue(
     key: str,
     payload: dict,
     email_id: UUID | None = None,
+    priority: int = PRIORITY_REQUESTED,
 ):
     request_hash = digest(payload)
     cursor = await connection.execute(
-        """insert into public.processing_jobs(workspace_id,email_id,kind,idempotency_key,request_sha256,payload)
-        values(%s,%s,%s,%s,%s,%s) on conflict(workspace_id,kind,idempotency_key) do nothing returning *""",
-        (workspace_id, email_id, kind, key, request_hash, Jsonb(payload)),
+        """insert into public.processing_jobs(workspace_id,email_id,kind,idempotency_key,request_sha256,payload,priority)
+        values(%s,%s,%s,%s,%s,%s,%s) on conflict(workspace_id,kind,idempotency_key) do nothing returning *""",
+        (workspace_id, email_id, kind, key, request_hash, Jsonb(payload), priority),
     )
     job = await cursor.fetchone()
     if job is None:
@@ -45,17 +50,20 @@ async def enqueue(
 
 
 async def claim(connection):
-    # Real workspaces come first, then demo sessions newest-first: the visitor who has just opened
-    # the demo is waiting on this queue, while an older session's backlog can afford to wait.
-    # Within a workspace, comparisons (verify) finish before new reading starts, work a person
-    # asked for by clicking comes before the bulk reading of a whole mailbox (payload "offline"),
-    # then oldest first.
-    cursor = await connection.execute("""with candidate as (
+    # What a person asked for runs before the first emails of a bulk read, which run before the rest
+    # of it (priority). At equal priority the workspace with the fewest jobs already running goes
+    # next, so several visitors share the workers evenly instead of one starving the others; real
+    # workspaces come before demo sessions, and among equals the newest demo session goes first.
+    # Within a workspace, comparisons (verify) finish before new reading starts, then oldest first.
+    cursor = await connection.execute("""with running as (
+        select workspace_id,count(*) as n from public.processing_jobs where state='running' group by workspace_id),
+        candidate as (
         select j.id from public.processing_jobs j
         left join public.demo_sessions d on d.workspace_id=j.workspace_id
+        left join running r on r.workspace_id=j.workspace_id
         where j.state in ('queued','retry_wait') and j.available_at<=now() and j.attempt<j.max_attempts
-        order by d.created_at desc nulls first,(j.kind <> 'verify'),
-          coalesce((j.payload->>'offline')::boolean,false),j.available_at,j.created_at
+        order by j.priority,coalesce(r.n,0),d.created_at desc nulls first,(j.kind <> 'verify'),
+          j.available_at,j.created_at
         for update of j skip locked limit 1)
         update public.processing_jobs j set state='running',attempt=attempt+1,lease_token=gen_random_uuid(),
         leased_until=now()+interval '90 seconds',updated_at=now() from candidate c where j.id=c.id returning j.*""")
@@ -63,16 +71,17 @@ async def claim(connection):
 
 
 async def promote(connection, workspace_id: UUID, job_id: UUID):
-    """Move a waiting job to the front of its workspace's queue (a person asked for it by name).
+    """Run a waiting job next (a person asked for it by name), ahead of any bulk reading.
 
     Only `queued` jobs move: a `retry_wait` job is backing off on purpose (for example after a
     provider rate limit) and must keep its delay.
     """
     await connection.execute(
-        """update public.processing_jobs set available_at=least(available_at,now()-interval '1 day'),
-        created_at=least(created_at,now()-interval '1 day'),payload=payload-'offline',updated_at=now()
+        """update public.processing_jobs set priority=least(priority,%s),
+        available_at=least(available_at,now()-interval '1 day'),
+        created_at=least(created_at,now()-interval '1 day'),updated_at=now()
         where workspace_id=%s and id=%s and state='queued'""",
-        (workspace_id, job_id),
+        (PRIORITY_REQUESTED, workspace_id, job_id),
     )
 
 
@@ -128,16 +137,21 @@ async def fence(connection, job):
         raise DomainError("JOB_LEASE_LOST", "A newer worker owns this job", status=409)
 
 
-async def finish(connection, job, result: dict):
-    await fence(connection, job)
+async def finish(connection, job, result: dict, *, fenced: bool = False):
+    """Mark the job succeeded and record it, in one statement.
+
+    Pass fenced=True only when this transaction has already run `fence` for the same job: that lock is
+    held until commit, so checking it again would cost a database round trip for nothing.
+    """
+    if not fenced:
+        await fence(connection, job)
     await connection.execute(
-        """update public.processing_jobs set state='succeeded',result=%s,lease_token=null,
-        leased_until=null,error_code=null,updated_at=now() where workspace_id=%s and id=%s""",
-        (Jsonb(result), job["workspace_id"], job["id"]),
-    )
-    await connection.execute(
-        "insert into public.job_events(workspace_id,job_id,stage,event) values(%s,%s,%s,%s)",
-        (job["workspace_id"], job["id"], job["kind"], Jsonb({"state": "succeeded"})),
+        """with done as (
+            update public.processing_jobs set state='succeeded',result=%s,lease_token=null,
+            leased_until=null,error_code=null,updated_at=now() where workspace_id=%s and id=%s returning id)
+        insert into public.job_events(workspace_id,job_id,stage,event) select %s,id,%s,%s from done""",
+        (Jsonb(result), job["workspace_id"], job["id"], job["workspace_id"], job["kind"],
+         Jsonb({"state": "succeeded"})),
     )
 
 

@@ -5,22 +5,22 @@ from app.services.email_safety import assess_email
 
 
 async def assess_stored(connection, workspace, email_id):
+    # The email and its attachment names come back together: one round trip, not two.
     email = await (
         await connection.execute(
-            "select sender,subject,body from public.emails where workspace_id=%s and id=%s and deleted_at is null",
+            """select e.sender,e.subject,e.body,
+            coalesce(array_agg(a.original_name order by a.original_name)
+                     filter (where a.original_name is not null), '{}') as names
+            from public.emails e left join public.attachments a
+            on a.workspace_id=e.workspace_id and a.email_id=e.id
+            where e.workspace_id=%s and e.id=%s and e.deleted_at is null group by e.id""",
             (workspace, email_id),
         )
     ).fetchone()
     if not email:
         raise DomainError("NOT_FOUND", "Email was not found", status=404)
-    names = await (
-        await connection.execute(
-            "select original_name from public.attachments where workspace_id=%s and email_id=%s",
-            (workspace, email_id),
-        )
-    ).fetchall()
     result = assess_email(
-        email["sender"], None, email["subject"], email["body"], [r["original_name"] for r in names]
+        email["sender"], None, email["subject"], email["body"], list(email["names"])
     ).to_dict()
     row = await (
         await connection.execute(

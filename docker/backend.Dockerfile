@@ -20,4 +20,7 @@ EXPOSE 8000
 # (`python -m app.workers.runner`), as docker/compose.dev.yml does. Extra workers are safe: they
 # share the job queue through PostgreSQL row locks.
 ENV RUN_WORKER=true
+# Jobs are limited by database round trips, not CPU, so a few run at once. Each slot uses about two
+# database connections and the hosted database allows 60, so raise this only with that in mind.
+ENV WORKER_CONCURRENCY=4
 CMD ["sh", "-c", "if [ \"$RUN_WORKER\" = \"true\" ]; then (while true; do python -m app.workers.runner; echo 'worker exited; restarting in 5 seconds' >&2; sleep 5; done) & fi; exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
