@@ -1,0 +1,14 @@
+BILL OF LADING - DRAFT
+========================================
+
+Shipper:	HARBOR LIGHT TRADING CO
+Consignee (Non-Negotiable):	Sunrise Textile Mills Ltd
+Notify Party:	NORDIC HOME GOODS GMBH
+Load Port:	ANTWERP
+Discharge Port:	LAEM CHABANG
+Vessel / Voyage:	MV ORIENT V.701
+Net Weight:	47,896 KG
+Container Count:	5 X 20'GP
+Gross Wt (kgs):	48600
+Freight:	COLLECT
+Commodity:	Cotton yarn

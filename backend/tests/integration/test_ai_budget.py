@@ -208,8 +208,8 @@ async def test_a_rate_limited_live_evaluation_waits_and_retries_instead_of_losin
 async def test_the_cached_evaluation_of_the_shipped_heldout_set_matches_the_documented_figures(
     database, workspace_factory
 ):
-    if not ai_quality.HELDOUT.is_dir():
-        pytest.skip("the held-out set is not shipped in this environment")
+    # The held-out set is shipped in backend/data, so this runs everywhere, CI included.
+    assert (ai_quality.heldout_root() / "truth.json").is_file()
     context = await workspace_factory()
     app = create_app(Settings(environment="test"))
     app.state.database = database
@@ -231,3 +231,22 @@ async def test_a_missing_evaluation_set_is_reported_not_faked(database, workspac
         body = (await client.get("/api/v1/quality/ai-classifier")).json()
         assert body["available"] is False and body["plan"] is None and body["latest"] is None
         assert (await client.post("/api/v1/quality/ai-classifier/evaluate", json={})).status_code == 404
+
+
+async def test_a_fresh_workspace_sees_the_saved_score_without_clicking_anything(database, workspace_factory):
+    context = await workspace_factory()
+    app = create_app(Settings(environment="test"))
+    app.state.database = database
+    async with client_for(app, context, role="viewer") as client:
+        body = (await client.get("/api/v1/quality/ai-classifier")).json()
+    latest = body["latest"]
+    assert body["available"] is True
+    assert (latest["id"], latest["source"], latest["status"], latest["calls_made"]) == (
+        None, "heldout_cached", "complete", 0,
+    )
+    metrics = latest["metrics"]
+    assert metrics["sample_size"] == 60
+    assert (metrics["rules"]["correct"], metrics["ai"]["correct"], metrics["combined"]["correct"]) == (29, 57, 58)
+    async with database.connection() as connection:  # reading never writes a run
+        runs = await (await connection.execute("select count(*) as n from public.quality_runs")).fetchone()
+    assert runs["n"] == 0

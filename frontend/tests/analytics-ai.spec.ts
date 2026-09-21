@@ -108,3 +108,15 @@ test("when the labelled set is not shipped the panel says so instead of showing 
   await expect(panel(page)).toContainText("not shipped in this environment");
   await expect(panel(page).getByText("AI alone", { exact: true })).toHaveCount(0);
 });
+
+test("a workspace nobody has scored yet still shows the saved score at once, without a saved run behind it", async ({ page }) => {
+  // The server computes this from AI answers saved earlier and stores nothing: no id, no timestamps.
+  const unsaved = { ...RUN, id: null, created_at: null, finished_at: null };
+  await open(page, { available: true, message: null, provider_configured: true, latest: unsaved, usage, plan: { sample_size: 60, answered: 60, to_call: 0, estimated_seconds: 0 } });
+  const scores = panel(page);
+  await expect(scores.getByText("Rules alone", { exact: true }).locator("..")).toContainText("48.3%");
+  await expect(scores.getByText("AI alone", { exact: true }).locator("..")).toContainText("95.0%");
+  await expect(scores).toContainText("Scored from AI answers saved earlier, with no new calls");
+  await expect(scores).not.toContainText("No score has been saved yet");
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+});

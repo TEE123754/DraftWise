@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h015",
+  "from": "user15@shipco.example",
+  "subject": "RE: SO301380 - please check",
+  "body": "Good morning, the SI and the carrier's draft are both attached. Would you double check them for SO301380?\n\nBest regards,\nKenji Aoki\nCoastline Freight Services",
+  "attachments": [
+    "attachments/email_h015_SI.pdf",
+    "attachments/email_h015_BL.pdf"
+  ]
+}

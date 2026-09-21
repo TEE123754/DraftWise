@@ -1,0 +1,7 @@
+{
+  "email_id": "email_h043",
+  "from": "user43@acme-trade.example",
+  "subject": "Invoice query INV-44568",
+  "body": "Requesting a credit note for the duplicate charge on invoice INV-34827.\n\nBest regards,\nHana Kim\nNorthwind Logistics",
+  "attachments": []
+}

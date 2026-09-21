@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h022",
+  "from": "user22@acme-trade.example",
+  "subject": "",
+  "body": "Good morning, the SI and the carrier's draft are both attached. Would you double check them for SO935197?\n\nBest regards,\nKenji Aoki\nNorthwind Logistics",
+  "attachments": [
+    "attachments/email_h022_SI.txt",
+    "attachments/email_h022_BL.pdf"
+  ]
+}

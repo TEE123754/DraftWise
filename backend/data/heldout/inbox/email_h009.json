@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h009",
+  "from": "user9@freightline.example",
+  "subject": "",
+  "body": "Kindly review the enclosed BL draft; SI attached for reference. Revert if anything is off.\n\nBest regards,\nHana Kim\nOakmont Shipping Agency",
+  "attachments": [
+    "attachments/email_h009_SI.txt",
+    "attachments/email_h009_BL.txt"
+  ]
+}

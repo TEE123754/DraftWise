@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h012",
+  "from": "user12@freightline.example",
+  "subject": "SO711582 / vessel docs",
+  "body": "Attaching SI and BL draft for SO711582. Can you confirm everything matches?\n\nBest regards,\nKenji Aoki\nCoastline Freight Services",
+  "attachments": [
+    "attachments/email_h012_SI.xlsx",
+    "attachments/email_h012_BL.xlsx"
+  ]
+}

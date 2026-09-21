@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h010",
+  "from": "user10@shipco.example",
+  "subject": "Invoice SO794494 - attached documents",
+  "body": "Draft B/L attached - validate against the SI please. Booking SO794494.\n\nBest regards,\nAmara Okafor\nEvergreen Forwarding",
+  "attachments": [
+    "attachments/email_h010_SI.txt",
+    "attachments/email_h010_BL.txt"
+  ]
+}

@@ -1,0 +1,14 @@
+BILL OF LADING - DRAFT
+========================================
+
+Shipper: Summit Electronics Corp
+Consignee: LOTUS GARMENTS PVT LTD
+Notify: Lotus Garments Pvt Ltd
+Loading Port: Ningbo, China
+Destination Port: JEDDAH, SAUDI ARABIA
+Net Weight: 71,546 KG
+Commodity: Auto spare parts
+Container Count: 6 x 20' FCL
+Gross Wt (kgs): 71900
+Freight: COLLECT
+Vessel / Voyage: MV AURORA V.307

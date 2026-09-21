@@ -1,0 +1,14 @@
+DRAFT B/L
+========================================
+
+Shipper:	Atlas Furniture Exports
+Consignee (Non-Negotiable):	Orion Machinery Works
+Notify:	Orion Machinery Works
+Load Port:	ROTTERDAM
+Port of Discharge:	DURBAN
+Commodity:	Frozen fish
+Freight:	COLLECT
+No. of Containers:	10x40HC
+Gross Weight:	126,150 KG
+Net Weight:	125,286 KG
+Vessel / Voyage:	MV CAPELLA V.812

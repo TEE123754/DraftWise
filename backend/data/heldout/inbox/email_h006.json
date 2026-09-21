@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h006",
+  "from": "user6@acme-trade.example",
+  "subject": "RE: BK247803 - please check",
+  "body": "Please verify the draft bill of lading vs the shipping instructions and let us know of any discrepancies.\n\nBest regards,\nPriya Nair\nEvergreen Forwarding",
+  "attachments": [
+    "attachments/email_h006_SI.pdf",
+    "attachments/email_h006_BL.pdf"
+  ]
+}

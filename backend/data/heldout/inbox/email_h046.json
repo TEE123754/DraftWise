@@ -1,0 +1,7 @@
+{
+  "email_id": "email_h046",
+  "from": "user46@acme-trade.example",
+  "subject": "Weekly ops sync",
+  "body": "Reminder: the weekly operations sync is at 10:00 tomorrow. Agenda attached in the calendar invite.\n\nBest regards,\nHana Kim\nNorthwind Logistics",
+  "attachments": []
+}

@@ -1,0 +1,61 @@
+{
+  "reference": {
+    "source": "shipping_verification_results.xlsx",
+    "independent": false
+  },
+  "dataset": {
+    "total_emails": 520,
+    "reference_evaluated": 520
+  },
+  "overall": {
+    "accuracy": 1.0,
+    "abstention_rate": 0.0,
+    "coverage": 1.0
+  },
+  "by_method": {
+    "rule": {
+      "count": 520,
+      "accuracy": 1.0
+    },
+    "ai": {
+      "count": 0,
+      "accuracy": null
+    },
+    "fallback": {
+      "count": 0,
+      "accuracy": null
+    }
+  },
+  "categories": {
+    "BL_COMPARISON": {
+      "support": 220,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "GENERAL": {
+      "support": 60,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "INVOICE_QUERY": {
+      "support": 75,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "SI_REQUEST": {
+      "support": 125,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "SPAM": {
+      "support": 40,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  }
+}

@@ -1,0 +1,14 @@
+DRAFT B/L
+========================================
+
+Shipper/Exporter:	Pinnacle Steel Corporation
+Consignee / Buyer:	Cedar Valley Foods LLC
+Notify Party:	Sunrise Textile Mills Ltd
+Load Port:	NINGBO
+Discharge Port:	FELIXSTOWE
+Commodity:	Auto spare parts
+Vessel / Voyage:	MV CAPELLA V.860
+Container Count:	1 X 20'GP
+Gross Wt (kgs):	78250
+Freight:	PREPAID
+Net Weight:	77,865 KG

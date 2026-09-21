@@ -1,0 +1,7 @@
+{
+  "email_id": "email_h040",
+  "from": "user40@shipco.example",
+  "subject": "Billing question",
+  "body": "Could you clarify the demurrage amount billed on INV-96492? It looks higher than the free days allow.\n\nBest regards,\nHana Kim\nEvergreen Forwarding",
+  "attachments": []
+}

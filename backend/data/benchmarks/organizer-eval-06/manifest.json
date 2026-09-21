@@ -1,0 +1,19 @@
+{
+  "source": "http://localhost:8080",
+  "emails_count": 520,
+  "total_time_seconds": 4.375,
+  "ai_fallback": false,
+  "stage_counts": {
+    "BL_COMPARISON": 220,
+    "SI_REQUEST": 125,
+    "INVOICE_QUERY": 75,
+    "GENERAL": 60,
+    "SPAM": 40
+  },
+  "defect_counts": {
+    "OK": 454,
+    "MISMATCH": 46,
+    "NEEDS_REVIEW": 20
+  },
+  "unresolved_classification": []
+}

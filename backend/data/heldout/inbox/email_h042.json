@@ -1,0 +1,7 @@
+{
+  "email_id": "email_h042",
+  "from": "user42@acme-trade.example",
+  "subject": "Invoice query INV-90130",
+  "body": "Please send the payment advice details for INV-50094; our accounts cannot match the amount.\n\nBest regards,\nKenji Aoki\nNorthwind Logistics",
+  "attachments": []
+}

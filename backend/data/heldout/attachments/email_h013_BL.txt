@@ -1,0 +1,14 @@
+DRAFT BILL OF LADING
+========================================
+
+Shipper/Exporter: NORDIC HOME GOODS GMBH
+Consignee (Non-Negotiable): Cedar Valley Foods LLC
+Notify Party: Cedar Valley Foods LLC
+Port of Loading: DURBAN
+Port of Discharge: LAEM CHABANG
+Freight: COLLECT
+Vessel / Voyage: MV ORIENT V.473
+Container Count: 7 x 40'HC
+Gross Weight: 149,250 KG
+Net Weight: 148,411 KG
+Commodity: Plastic granules

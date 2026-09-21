@@ -1,0 +1,14 @@
+SI - Shipper's Letter of Instruction
+========================================
+
+Shipper:	Lotus Garments Pvt Limited
+Consignee:	HARBOR LIGHT TRADING CO
+Notify Party:	HARBOR LIGHT TRADING CO
+Port of Loading:	HAMBURG, GERMANY
+Port of Discharge:	SANTOS (BRSSZ)
+Vessel / Voyage:	MV AURORA V.360
+Freight:	COLLECT
+Container Count:	6 x 20' FCL
+Gross Weight:	92100 KGS
+Commodity:	Cotton yarn
+Net Weight:	91,627 KG

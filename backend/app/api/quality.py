@@ -96,15 +96,31 @@ async def quality_status(request: Request, ctx: Viewer):
 
 
 ARTIFACTS = Path(__file__).resolve().parents[3] / "artifacts"
+# The measured results shipped with the application (backend/data), so a deployed instance can show
+# them. Only aggregate results are kept there: no per-email predictions and no answer key.
+DATA = Path(__file__).resolve().parents[2] / "data"
 BENCHMARK_REPORT = ARTIFACTS / "quality/report-v2.json"
+SHIPPED_BENCHMARK_REPORT = DATA / "quality/report-v2.json"
 # Runs of `scripts/benchmark.py run --submit` against the organizer scoring server, saved as
-# artifacts/benchmarks/organizer-eval-NN; the highest number is the latest.
+# artifacts/benchmarks/organizer-eval-NN; the highest number is the latest. The scoreboard and
+# manifest of a run are copied to backend/data/benchmarks so that deployed instances have them too.
 BENCHMARKS = ARTIFACTS / "benchmarks"
+SHIPPED_BENCHMARKS = DATA / "benchmarks"
+
+
+def benchmark_report_path() -> Path:
+    """The local report if this checkout has one, otherwise the copy shipped with the application."""
+    return BENCHMARK_REPORT if BENCHMARK_REPORT.is_file() else SHIPPED_BENCHMARK_REPORT
 
 
 def latest_official_run() -> Path | None:
-    runs = sorted(p for p in BENCHMARKS.glob("organizer-eval-*") if (p / "scoreboard.json").is_file())
-    return runs[-1] if runs else None
+    # A local run of the same name wins over the shipped copy; the highest name is the latest.
+    found = {}
+    for root in (SHIPPED_BENCHMARKS, BENCHMARKS):
+        for path in root.glob("organizer-eval-*"):
+            if (path / "scoreboard.json").is_file():
+                found[path.name] = path
+    return found[max(found)] if found else None
 
 
 def read_json(path: Path):
@@ -118,7 +134,7 @@ def read_json(path: Path):
 async def get_quality_benchmark(request: Request, ctx: Viewer):
     # Only measured results are ever returned: no placeholder metrics when they are absent
     # (the artifacts folder is not shipped in container images).
-    report = read_json(BENCHMARK_REPORT)
+    report = read_json(benchmark_report_path())
     if report is None:
         raise DomainError(
             "BENCHMARK_UNAVAILABLE",

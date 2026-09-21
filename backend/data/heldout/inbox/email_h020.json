@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h020",
+  "from": "user20@acme-trade.example",
+  "subject": "Check docs SO657777",
+  "body": "Draft B/L attached - validate against the SI please. Booking BK791399.\n\nBest regards,\nTomas Weber\nNorthwind Logistics",
+  "attachments": [
+    "attachments/email_h020_SI.txt",
+    "attachments/email_h020_BL.txt"
+  ]
+}

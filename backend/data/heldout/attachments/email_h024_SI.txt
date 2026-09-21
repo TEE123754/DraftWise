@@ -1,0 +1,14 @@
+SI - Shipper's Letter of Instruction
+========================================
+
+Shipper/Exporter: HARBOR LIGHT TRADING CO
+Consignee (Non-Negotiable): Sunrise Textile Mills Ltd
+Notify: NORDIC HOME GOODS GMBH
+Load Port: Antwerp, Belgium
+Port of Discharge: LAEM CHABANG
+Net Weight: 47,888 KG
+Vessel / Voyage: MV AURORA V.676
+Container Count: 5 containers
+Gross Wt (kgs): ____
+Freight: COLLECT
+Commodity: Frozen fish

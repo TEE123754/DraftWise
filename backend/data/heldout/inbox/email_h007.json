@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h007",
+  "from": "user7@acme-trade.example",
+  "subject": "Fwd: BL draft OC993629",
+  "body": "Please verify the draft bill of lading vs the shipping instructions and let us know of any discrepancies.\n\nBest regards,\nKenji Aoki\nNorthwind Logistics",
+  "attachments": [
+    "attachments/email_h007_SI.xlsx",
+    "attachments/email_h007_BL.xlsx"
+  ]
+}

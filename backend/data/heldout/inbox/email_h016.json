@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h016",
+  "from": "user16@acme-trade.example",
+  "subject": "Invoice BK801103 - attached documents",
+  "body": "Hi team, could you cross-check the attached draft B/L against our SI before we release it? Ref BK801103.\n\nBest regards,\nHana Kim\nEvergreen Forwarding",
+  "attachments": [
+    "attachments/email_h016_SI.txt",
+    "attachments/email_h016_BL.txt"
+  ]
+}

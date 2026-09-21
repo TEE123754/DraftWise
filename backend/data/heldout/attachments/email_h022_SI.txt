@@ -1,0 +1,14 @@
+SI - Shipper's Letter of Instruction
+========================================
+
+Shipper/Exporter:	Meridian Chemicals Limited
+Consignee:	Zenith Polymers Pte Ltd
+Notify:	Zenith Polymers Pte Ltd
+Load Port:	ANTWERP
+Discharge Port:	DURBAN
+Net Weight:	205,587 KG
+Commodity:	Auto spare parts
+Container Count:	6x40HC
+Gross Weight:	205,950.00 KG
+Freight:	PREPAID
+Vessel / Voyage:	MV STELLA V.104

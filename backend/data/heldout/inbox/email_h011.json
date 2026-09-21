@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h011",
+  "from": "user11@shipco.example",
+  "subject": "Fwd: BL draft OC147469",
+  "body": "We received the carrier's draft. Please compare with what we submitted (SI attached) and flag differences.\n\nBest regards,\nPriya Nair\nEvergreen Forwarding",
+  "attachments": [
+    "attachments/email_h011_SI.docx",
+    "attachments/email_h011_BL.txt"
+  ]
+}

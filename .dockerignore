@@ -15,3 +15,5 @@ artifacts
 !backend/data/*.zip
 *.pdf
 *.docx
+!backend/data/heldout/**/*.pdf
+!backend/data/heldout/**/*.docx

@@ -1,0 +1,14 @@
+BILL OF LADING - DRAFT
+========================================
+
+Shipper:	Atlas Furniture Exports
+Consignee (Non-Negotiable):	KAPPA PACKAGING SDN BHD
+Notify:	Sunrise Textile Mills Limited
+Load Port:	QINGDAO
+Port of Discharge:	LOS ANGELES (USLAX)
+Freight:	COLLECT
+Commodity:	Frozen fish
+Container Count:	7 x 40'HC
+Gross Wt (kgs):	150950
+Net Weight:	150,205 KG
+Vessel / Voyage:	MV STELLA V.593

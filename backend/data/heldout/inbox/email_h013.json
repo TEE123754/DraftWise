@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h013",
+  "from": "user13@shipco.example",
+  "subject": "",
+  "body": "We received the carrier's draft. Please compare with what we submitted (SI attached) and flag differences.\n\nBest regards,\nPriya Nair\nCoastline Freight Services",
+  "attachments": [
+    "attachments/email_h013_SI.pdf",
+    "attachments/email_h013_BL.txt"
+  ]
+}

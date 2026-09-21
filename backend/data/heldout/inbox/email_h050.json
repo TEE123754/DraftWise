@@ -1,0 +1,7 @@
+{
+  "email_id": "email_h050",
+  "from": "user50@acme-trade.example",
+  "subject": "Vessel schedule update",
+  "body": "Please note MV AURORA ETA is revised to next Thursday due to port congestion. No action required.\n\nBest regards,\nKenji Aoki\nNorthwind Logistics",
+  "attachments": []
+}

@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h021",
+  "from": "user21@freightline.example",
+  "subject": "Check docs OC774387",
+  "body": "Please verify the draft bill of lading vs the shipping instructions and let us know of any discrepancies.\n\nBest regards,\nPriya Nair\nOakmont Shipping Agency",
+  "attachments": [
+    "attachments/email_h021_SI.txt",
+    "attachments/email_h021_BL.txt"
+  ]
+}

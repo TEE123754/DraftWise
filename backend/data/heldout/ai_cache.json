@@ -1,0 +1,1529 @@
+{
+ "classify": {
+  "email_h002": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 9.0
+  },
+  "email_h003": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 11.4
+  },
+  "email_h001": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 12.5
+  },
+  "email_h004": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 16.3
+  },
+  "email_h006": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 19.3
+  },
+  "email_h005": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 21.7
+  },
+  "email_h007": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 24.2
+  },
+  "email_h009": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 31.6
+  },
+  "email_h008": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 31.9
+  },
+  "email_h011": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 34.8
+  },
+  "email_h010": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 38.0
+  },
+  "email_h012": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 39.7
+  },
+  "email_h013": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 44.3
+  },
+  "email_h014": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 46.9
+  },
+  "email_h016": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 51.2
+  },
+  "email_h015": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 51.8
+  },
+  "email_h017": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 54.2
+  },
+  "email_h018": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 55.3
+  },
+  "email_h019": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 61.7
+  },
+  "email_h020": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 63.2
+  },
+  "email_h021": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 67.3
+  },
+  "email_h023": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 72.4
+  },
+  "email_h022": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 74.3
+  },
+  "email_h025": {
+   "category": "SI_REQUEST",
+   "ambiguous": false,
+   "seconds": 76.4
+  },
+  "email_h024": {
+   "category": "BL_COMPARISON",
+   "ambiguous": false,
+   "seconds": 77.6
+  },
+  "email_h026": {
+   "category": "SI_REQUEST",
+   "ambiguous": false,
+   "seconds": 78.9
+  },
+  "email_h028": {
+   "category": "SI_REQUEST",
+   "ambiguous": false,
+   "seconds": 81.3
+  },
+  "email_h027": {
+   "category": "SI_REQUEST",
+   "ambiguous": false,
+   "seconds": 82.3
+  },
+  "email_h029": {
+   "category": "SI_REQUEST",
+   "ambiguous": false,
+   "seconds": 84.0
+  },
+  "email_h030": {
+   "category": "SI_REQUEST",
+   "ambiguous": false,
+   "seconds": 87.5
+  },
+  "email_h031": {
+   "category": "SI_REQUEST",
+   "ambiguous": false,
+   "seconds": 88.6
+  },
+  "email_h032": {
+   "category": "SI_REQUEST",
+   "ambiguous": false,
+   "seconds": 91.6
+  },
+  "email_h033": {
+   "category": "SI_REQUEST",
+   "ambiguous": false,
+   "seconds": 93.2
+  },
+  "email_h034": {
+   "category": "SI_REQUEST",
+   "ambiguous": false,
+   "seconds": 95.7
+  },
+  "email_h035": {
+   "error": "PROVIDER_OUTPUT_INVALID",
+   "seconds": 8.0
+  },
+  "email_h036": {
+   "category": "INVOICE_QUERY",
+   "ambiguous": false,
+   "seconds": 8.8
+  },
+  "email_h037": {
+   "category": "INVOICE_QUERY",
+   "ambiguous": false,
+   "seconds": 9.6
+  },
+  "email_h038": {
+   "category": "INVOICE_QUERY",
+   "ambiguous": false,
+   "seconds": 8.6
+  },
+  "email_h039": {
+   "category": "INVOICE_QUERY",
+   "ambiguous": false,
+   "seconds": 10.5
+  },
+  "email_h040": {
+   "category": "INVOICE_QUERY",
+   "ambiguous": false,
+   "seconds": 6.8
+  },
+  "email_h041": {
+   "category": "INVOICE_QUERY",
+   "ambiguous": false,
+   "seconds": 9.8
+  },
+  "email_h042": {
+   "category": "INVOICE_QUERY",
+   "ambiguous": false,
+   "seconds": 10.7
+  },
+  "email_h043": {
+   "category": "INVOICE_QUERY",
+   "ambiguous": false,
+   "seconds": 10.7
+  },
+  "email_h044": {
+   "category": "INVOICE_QUERY",
+   "ambiguous": false,
+   "seconds": 6.5
+  },
+  "email_h045": {
+   "category": "GENERAL",
+   "ambiguous": false,
+   "seconds": 10.0
+  },
+  "email_h046": {
+   "category": "GENERAL",
+   "ambiguous": false,
+   "seconds": 9.1
+  },
+  "email_h047": {
+   "category": "GENERAL",
+   "ambiguous": false,
+   "seconds": 11.0
+  },
+  "email_h048": {
+   "category": "GENERAL",
+   "ambiguous": false,
+   "seconds": 6.4
+  },
+  "email_h049": {
+   "category": "GENERAL",
+   "ambiguous": false,
+   "seconds": 9.0
+  },
+  "email_h050": {
+   "error": "PROVIDER_OUTPUT_INVALID",
+   "seconds": 4.8
+  },
+  "email_h051": {
+   "error": "PROVIDER_OUTPUT_INVALID",
+   "seconds": 3.5
+  },
+  "email_h052": {
+   "category": "GENERAL",
+   "ambiguous": false,
+   "seconds": 9.0
+  },
+  "email_h053": {
+   "category": "SPAM",
+   "ambiguous": false,
+   "seconds": 11.2
+  },
+  "email_h054": {
+   "category": "SPAM",
+   "ambiguous": false,
+   "seconds": 7.0
+  },
+  "email_h055": {
+   "category": "SPAM",
+   "ambiguous": false,
+   "seconds": 8.9
+  },
+  "email_h056": {
+   "category": "SPAM",
+   "ambiguous": false,
+   "seconds": 9.2
+  },
+  "email_h057": {
+   "category": "SPAM",
+   "ambiguous": false,
+   "seconds": 18.5
+  },
+  "email_h058": {
+   "category": "SPAM",
+   "ambiguous": false,
+   "seconds": 8.3
+  },
+  "email_h059": {
+   "category": "SPAM",
+   "ambiguous": false,
+   "seconds": 17.2
+  },
+  "email_h060": {
+   "category": "SPAM",
+   "ambiguous": false,
+   "seconds": 9.1
+  }
+ },
+ "extract": {
+  "attachments/email_h015_SI.pdf": {
+   "extraction": {
+    "document_id": "attachments/email_h015_SI.pdf",
+    "document_type": "SI",
+    "fields": {
+     "shipper": {
+      "raw_value": "Meridian Chemicals Limited",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_SI.pdf:page:1:ocr:1",
+        "quote": "Shipper/Exporter: Meridian Chemicals Limited"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "Baltic Timber Export AS",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_SI.pdf:page:1:ocr:2",
+        "quote": "Consignee (Non-Negotiable): Baltic Timber Export AS"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "Baltic Timber Export AS",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_SI.pdf:page:1:ocr:3",
+        "quote": "Notify: Baltic Timber Export AS"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "LOS ANGELES",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_SI.pdf:page:1:ocr:4",
+        "quote": "Port of Loading: LOS ANGELES"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "ANTWERP",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_SI.pdf:page:1:ocr:5",
+        "quote": "Port of Discharge: ANTWERP"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "6 containers",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_SI.pdf:page:1:ocr:8",
+        "quote": "No. of Containers: 6 containers"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "117,600",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_SI.pdf:page:1:ocr:9",
+        "quote": "Gross Wt (kgs): 117,600"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": [
+     "Page 1 used OCR; inspect uncertain characters"
+    ]
+   },
+   "seconds": 109.7
+  },
+  "attachments/email_h015_BL.pdf": {
+   "extraction": {
+    "document_id": "attachments/email_h015_BL.pdf",
+    "document_type": "BL",
+    "fields": {
+     "shipper": {
+      "raw_value": "Meridian Chemicals Limited",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_BL.pdf:page:1:ocr:1",
+        "quote": "Shipper: Meridian Chemicals Limited"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "BALTIC TIMBER EXPORT AS",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_BL.pdf:page:1:ocr:2",
+        "quote": "Consignee: BALTIC TIMBER EXPORT AS"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "BALTIC TIMBER EXPORT AS",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_BL.pdf:page:1:ocr:3",
+        "quote": "Notify Party: BALTIC TIMBER EXPORT AS"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "LOS ANGELES (USLAX)",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_BL.pdf:page:1:ocr:4",
+        "quote": "Port of Loading: LOS ANGELES (USLAX)"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "Antwerp, Belgium",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_BL.pdf:page:1:ocr:5",
+        "quote": "Port of Discharge: Antwerp, Belgium"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "6 containers",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_BL.pdf:page:1:ocr:8",
+        "quote": "Container Count: 6 containers"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "117,600 KG",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h015_BL.pdf:page:1:ocr:9",
+        "quote": "Gross Weight: 117,600 KG"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": [
+     "Page 1 used OCR; inspect uncertain characters"
+    ]
+   },
+   "seconds": 110.0
+  },
+  "attachments/email_h016_SI.txt": {
+   "extraction": {
+    "document_id": "attachments/email_h016_SI.txt",
+    "document_type": "SI",
+    "fields": {
+     "shipper": {
+      "raw_value": "Sunrise Textile Mills Ltd",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_SI.txt:line:4",
+        "quote": "Shipper Name: Sunrise Textile Mills Ltd"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "SUMMIT ELECTRONICS CORP",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_SI.txt:line:5",
+        "quote": "Consignee / Buyer: SUMMIT ELECTRONICS CORP"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "Summit Electronics Corp",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_SI.txt:line:6",
+        "quote": "Notify Party: Summit Electronics Corp"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "Rotterdam",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_SI.txt:line:7",
+        "quote": "Place of Loading: Rotterdam"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "QINGDAO",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_SI.txt:line:8",
+        "quote": "Destination Port: QINGDAO"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "6 x 20' FCL",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_SI.txt:line:11",
+        "quote": "Container Count: 6 x 20' FCL"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "85050",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_SI.txt:line:12",
+        "quote": "Gross Wt (kgs): 85050"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 116.3
+  },
+  "attachments/email_h016_BL.txt": {
+   "extraction": {
+    "document_id": "attachments/email_h016_BL.txt",
+    "document_type": "BL",
+    "fields": {
+     "shipper": {
+      "raw_value": "Sunrise Textile Mills Ltd",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_BL.txt:line:4",
+        "quote": "Shipper Name: Sunrise Textile Mills Ltd"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "Summit Electronics Corp",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_BL.txt:line:5",
+        "quote": "Receiver: Summit Electronics Corp"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "Summit Electronics Corp",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_BL.txt:line:6",
+        "quote": "Notify Party: Summit Electronics Corp"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "ROTTERDAM",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_BL.txt:line:7",
+        "quote": "POL: ROTTERDAM"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "QINGDAO",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_BL.txt:line:8",
+        "quote": "POD: QINGDAO"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "6 containers",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_BL.txt:line:11",
+        "quote": "Containers Qty: 6 containers"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "85,050 KG",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h016_BL.txt:line:12",
+        "quote": "G.W.: 85,050 KG"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 120.7
+  },
+  "attachments/email_h023_SI.txt": {
+   "extraction": {
+    "document_id": "attachments/email_h023_SI.txt",
+    "document_type": "SI",
+    "fields": {
+     "shipper": {
+      "raw_value": "Lotus Garments Pvt Ltd",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_SI.txt:line:4",
+        "quote": "Shipper:\tLotus Garments Pvt Ltd"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "Delta Auto Parts Co., Ltd",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_SI.txt:line:5",
+        "quote": "Consignee:\tDelta Auto Parts Co., Ltd"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "Summit Electronics Corp",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_SI.txt:line:6",
+        "quote": "Notify Party:\tSummit Electronics Corp"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "BUSAN",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_SI.txt:line:7",
+        "quote": "Port of Loading:\tBUSAN"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "TBA",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_SI.txt:line:8",
+        "quote": "Discharge Port:\tTBA"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "12 x 20' FCL",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_SI.txt:line:11",
+        "quote": "No. of Containers:\t12 x 20' FCL"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "88,500.00 KG",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_SI.txt:line:12",
+        "quote": "Gross Weight:\t88,500.00 KG"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 125.3
+  },
+  "attachments/email_h023_BL.txt": {
+   "extraction": {
+    "document_id": "attachments/email_h023_BL.txt",
+    "document_type": "BL",
+    "fields": {
+     "shipper": {
+      "raw_value": "Lotus Garments Pvt Ltd",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_BL.txt:line:4",
+        "quote": "Shipper: Lotus Garments Pvt Ltd"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "DELTA AUTO PARTS CO., LTD",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_BL.txt:line:5",
+        "quote": "Consignee (Non-Negotiable): DELTA AUTO PARTS CO., LTD"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "Summit Electronics Corp",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_BL.txt:line:6",
+        "quote": "Notify: Summit Electronics Corp"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "BUSAN",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_BL.txt:line:7",
+        "quote": "Port of Loading: BUSAN"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "DURBAN",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_BL.txt:line:8",
+        "quote": "Discharge Port: DURBAN"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "12 X 20'GP",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_BL.txt:line:11",
+        "quote": "No. of Containers: 12 X 20'GP"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "88500 KGS",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h023_BL.txt:line:12",
+        "quote": "Gross Weight: 88500 KGS"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 131.4
+  },
+  "attachments/email_h024_BL.txt": {
+   "extraction": {
+    "document_id": "attachments/email_h024_BL.txt",
+    "document_type": "BL",
+    "fields": {
+     "shipper": {
+      "raw_value": "HARBOR LIGHT TRADING CO",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h024_BL.txt:line:4",
+        "quote": "Shipper:\tHARBOR LIGHT TRADING CO"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "Sunrise Textile Mills Ltd",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h024_BL.txt:line:5",
+        "quote": "Consignee (Non-Negotiable):\tSunrise Textile Mills Ltd"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "NORDIC HOME GOODS GMBH",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h024_BL.txt:line:6",
+        "quote": "Notify Party:\tNORDIC HOME GOODS GMBH"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "ANTWERP",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h024_BL.txt:line:7",
+        "quote": "Load Port:\tANTWERP"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "LAEM CHABANG",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h024_BL.txt:line:8",
+        "quote": "Discharge Port:\tLAEM CHABANG"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "5 X 20'GP",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h024_BL.txt:line:11",
+        "quote": "Container Count:\t5 X 20'GP"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "48600",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h024_BL.txt:line:12",
+        "quote": "Gross Wt (kgs):\t48600"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 138.9
+  },
+  "attachments/email_h001_SI.txt": {
+   "error": "PROVIDER_OUTPUT_INVALID",
+   "seconds": 8.4
+  },
+  "attachments/email_h001_BL.txt": {
+   "extraction": {
+    "document_id": "attachments/email_h001_BL.txt",
+    "document_type": "BL",
+    "fields": {
+     "shipper": {
+      "raw_value": "Atlas Furniture Exports",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h001_BL.txt:line:4",
+        "quote": "Shipper:\tAtlas Furniture Exports"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "KAPPA PACKAGING SDN BHD",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h001_BL.txt:line:5",
+        "quote": "Consignee (Non-Negotiable):\tKAPPA PACKAGING SDN BHD"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "Sunrise Textile Mills Limited",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h001_BL.txt:line:6",
+        "quote": "Notify:\tSunrise Textile Mills Limited"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "QINGDAO",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h001_BL.txt:line:7",
+        "quote": "Load Port:\tQINGDAO"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "LOS ANGELES (USLAX)",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h001_BL.txt:line:8",
+        "quote": "Port of Discharge:\tLOS ANGELES (USLAX)"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "7 x 40'HC",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h001_BL.txt:line:11",
+        "quote": "Container Count:\t7 x 40'HC"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "150950",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h001_BL.txt:line:12",
+        "quote": "Gross Wt (kgs):\t150950"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 10.8
+  },
+  "attachments/email_h002_SI.txt": {
+   "extraction": {
+    "document_id": "attachments/email_h002_SI.txt",
+    "document_type": "SI",
+    "fields": {
+     "shipper": {
+      "raw_value": "Pinnacle Steel Corporation",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_SI.txt:line:4",
+        "quote": "Consignor:\tPinnacle Steel Corporation"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "Zenith Polymers Pte Ltd",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_SI.txt:line:5",
+        "quote": "Consignee:\tZenith Polymers Pte Ltd"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "Sunrise Textile Mills Ltd",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_SI.txt:line:6",
+        "quote": "Notify:\tSunrise Textile Mills Ltd"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "LAEM CHABANG",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_SI.txt:line:7",
+        "quote": "Port of Loading:\tLAEM CHABANG"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "FELIXSTOWE",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_SI.txt:line:8",
+        "quote": "Destination Port:\tFELIXSTOWE"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "1 x 40'HC",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_SI.txt:line:11",
+        "quote": "Container Count:\t1 x 40'HC"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "78,250 KG",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_SI.txt:line:12",
+        "quote": "Gross Wt (kgs):\t78,250 KG"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 10.8
+  },
+  "attachments/email_h002_BL.txt": {
+   "extraction": {
+    "document_id": "attachments/email_h002_BL.txt",
+    "document_type": "BL",
+    "fields": {
+     "shipper": {
+      "raw_value": "Pinnacle Steel Corporation",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_BL.txt:line:4",
+        "quote": "Shipper/Exporter:\tPinnacle Steel Corporation"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "Cedar Valley Foods LLC",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_BL.txt:line:5",
+        "quote": "Consignee / Buyer:\tCedar Valley Foods LLC"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "Sunrise Textile Mills Ltd",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_BL.txt:line:6",
+        "quote": "Notify Party:\tSunrise Textile Mills Ltd"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "NINGBO",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_BL.txt:line:7",
+        "quote": "Load Port:\tNINGBO"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "FELIXSTOWE",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_BL.txt:line:8",
+        "quote": "Discharge Port:\tFELIXSTOWE"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "1 X 20'GP",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_BL.txt:line:11",
+        "quote": "Container Count:\t1 X 20'GP"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "78250",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h002_BL.txt:line:12",
+        "quote": "Gross Wt (kgs):\t78250"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 12.9
+  },
+  "attachments/email_h003_SI.txt": {
+   "extraction": {
+    "document_id": "attachments/email_h003_SI.txt",
+    "document_type": "SI",
+    "fields": {
+     "shipper": {
+      "raw_value": "Meridian Chemicals Limited",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_SI.txt:line:4",
+        "quote": "Shipper: Meridian Chemicals Limited"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "KAPPA PACKAGING SDN BHD",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_SI.txt:line:5",
+        "quote": "Consignee (Non-Negotiable): KAPPA PACKAGING SDN BHD"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "KAPPA PACKAGING SDN BHD",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_SI.txt:line:6",
+        "quote": "Notify Party: KAPPA PACKAGING SDN BHD"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "HAMBURG",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_SI.txt:line:7",
+        "quote": "Port of Loading: HAMBURG"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "NINGBO",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_SI.txt:line:8",
+        "quote": "Discharge Port: NINGBO"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "9 X 20'GP",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_SI.txt:line:11",
+        "quote": "No. of Containers: 9 X 20'GP"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "128550",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_SI.txt:line:12",
+        "quote": "Gross Wt (kgs): 128550"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 11.2
+  },
+  "attachments/email_h003_BL.docx": {
+   "extraction": {
+    "document_id": "attachments/email_h003_BL.docx",
+    "document_type": "BL",
+    "fields": {
+     "shipper": {
+      "raw_value": "MERIDIAN CHEMICALS LIMITED",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_BL.docx:body:1:row:0:cell:1:0",
+        "quote": "MERIDIAN CHEMICALS LIMITED"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "KAPPA PACKAGING SDN BHD",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_BL.docx:body:1:row:1:cell:1:0",
+        "quote": "KAPPA PACKAGING SDN BHD"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "KAPPA PACKAGING SDN BHD",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_BL.docx:body:1:row:2:cell:1:0",
+        "quote": "KAPPA PACKAGING SDN BHD"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "Hamburg",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_BL.docx:body:1:row:3:cell:1:0",
+        "quote": "Hamburg"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "Ningbo, China",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_BL.docx:body:1:row:4:cell:1:0",
+        "quote": "Ningbo, China"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "10 containers",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_BL.docx:body:1:row:7:cell:1:0",
+        "quote": "10 containers"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "128550",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h003_BL.docx:body:1:row:8:cell:1:0",
+        "quote": "128550"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 11.5
+  },
+  "attachments/email_h004_SI.xlsx": {
+   "extraction": {
+    "document_id": "attachments/email_h004_SI.xlsx",
+    "document_type": "SI",
+    "fields": {
+     "shipper": {
+      "raw_value": "KAPPA PACKAGING SDN BHD",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_SI.xlsx:Sheet1:B3",
+        "quote": "KAPPA PACKAGING SDN BHD"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "Sunrise Textile Mills Limited",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_SI.xlsx:Sheet1:B4",
+        "quote": "Sunrise Textile Mills Limited"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "Sunrise Textile Mills Ltd",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_SI.xlsx:Sheet1:B5",
+        "quote": "Sunrise Textile Mills Ltd"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "JEDDAH, SAUDI ARABIA",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_SI.xlsx:Sheet1:B6",
+        "quote": "JEDDAH, SAUDI ARABIA"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "Laem Chabang, Thailand",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_SI.xlsx:Sheet1:B7",
+        "quote": "Laem Chabang, Thailand"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "1 x 40'HC",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_SI.xlsx:Sheet1:B10",
+        "quote": "1 x 40'HC"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "193,850",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_SI.xlsx:Sheet1:B11",
+        "quote": "193,850"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 10.7
+  },
+  "attachments/email_h004_BL.txt": {
+   "extraction": {
+    "document_id": "attachments/email_h004_BL.txt",
+    "document_type": "BL",
+    "fields": {
+     "shipper": {
+      "raw_value": "KAPPA PACKAGING SDN BHD",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_BL.txt:line:4",
+        "quote": "Shipper/Exporter:\tKAPPA PACKAGING SDN BHD"
+       }
+      ],
+      "alternatives": []
+     },
+     "consignee": {
+      "raw_value": "SUNRISE TEXTILE MILLS LTD",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_BL.txt:line:5",
+        "quote": "Consignee (Non-Negotiable):\tSUNRISE TEXTILE MILLS LTD"
+       }
+      ],
+      "alternatives": []
+     },
+     "notify_party": {
+      "raw_value": "Sunrise Textile Mills Limited",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_BL.txt:line:6",
+        "quote": "Notify:\tSunrise Textile Mills Limited"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_loading": {
+      "raw_value": "JEDDAH",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_BL.txt:line:7",
+        "quote": "Load Port:\tJEDDAH"
+       }
+      ],
+      "alternatives": []
+     },
+     "port_of_discharge": {
+      "raw_value": "Laem Chabang, Thailand",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_BL.txt:line:8",
+        "quote": "Discharge Port:\tLaem Chabang, Thailand"
+       }
+      ],
+      "alternatives": []
+     },
+     "container_count": {
+      "raw_value": "2 X 20'GP",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_BL.txt:line:11",
+        "quote": "Total Containers:\t2 X 20'GP"
+       }
+      ],
+      "alternatives": []
+     },
+     "gross_weight_kg": {
+      "raw_value": "193850",
+      "state": "present",
+      "evidence": [
+       {
+        "block_id": "attachments/email_h004_BL.txt:line:12",
+        "quote": "Gross Wt (kgs):\t193850"
+       }
+      ],
+      "alternatives": []
+     }
+    },
+    "warnings": []
+   },
+   "seconds": 12.0
+  }
+ }
+}

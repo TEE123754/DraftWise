@@ -24,6 +24,14 @@ from app.services.bounded_ai import BoundedAI, fingerprint, usage
 router = APIRouter(tags=["quality"])
 
 HELDOUT = Path(__file__).resolve().parents[3] / "artifacts" / "heldout"
+# The same held-out set (emails, categories, saved AI answers), shipped with the application so a
+# deployed instance can show its measured score. It holds category labels only, not field values.
+SHIPPED_HELDOUT = Path(__file__).resolve().parents[2] / "data" / "heldout"
+
+
+def heldout_root() -> Path:
+    """This checkout's own held-out folder if it has one, otherwise the shipped copy."""
+    return HELDOUT if (HELDOUT / "truth.json").is_file() else SHIPPED_HELDOUT
 SECONDS_PER_CALL = 13  # measured: one call plus the pause that keeps the provider from rate-limiting
 STALE_AFTER = timedelta(minutes=45)
 RATE_LIMIT_TRIES = 3
@@ -92,7 +100,7 @@ async def ai_usage(request: Request, ctx: Viewer):
 @router.get("/quality/ai-classifier")
 async def ai_classifier(request: Request, ctx: Viewer):
     settings = request.app.state.settings
-    loaded = load_heldout(HELDOUT)
+    loaded = load_heldout(heldout_root())
     async with request.app.state.database.connection() as connection:
         await _expire_stale(connection, ctx.workspace_id)
         latest = await (
@@ -113,6 +121,21 @@ async def ai_classifier(request: Request, ctx: Viewer):
                 "to_call": len(todo),
                 "estimated_seconds": len(todo) * SECONDS_PER_CALL,
             }
+            if latest is None and len(todo) < len(truth):
+                # Nobody has scored this workspace yet, but the saved AI answers make the score free:
+                # show it now instead of an empty panel and a button. Nothing is stored (a read
+                # never writes) and no AI call is made; "Refresh score" saves a run as before.
+                latest = {
+                    "id": None,
+                    "source": "heldout_cached",
+                    "status": "complete",
+                    "sample_size": len(truth),
+                    "calls_made": 0,
+                    "metrics": score_classifier(truth, emails, answers),
+                    "error": None,
+                    "created_at": None,
+                    "finished_at": None,
+                }
     return {
         "available": loaded is not None,
         "message": None if loaded else "The labelled evaluation set is not shipped in this environment.",
@@ -172,7 +195,7 @@ async def _run_live(app, workspace_id, run_id, loaded, todo):
 @router.post("/quality/ai-classifier/evaluate", status_code=200)
 async def evaluate(body: Evaluate, request: Request, ctx: Admin):
     settings, database = request.app.state.settings, request.app.state.database
-    loaded = load_heldout(HELDOUT)
+    loaded = load_heldout(heldout_root())
     if loaded is None:
         raise DomainError("EVALUATION_SET_UNAVAILABLE", "The labelled evaluation set is not shipped here", status=404)
     truth, emails, file_cache = loaded

@@ -1,0 +1,14 @@
+BILL OF LADING - DRAFT
+========================================
+
+Shipper/Exporter:	KAPPA PACKAGING SDN BHD
+Consignee (Non-Negotiable):	SUNRISE TEXTILE MILLS LTD
+Notify:	Sunrise Textile Mills Limited
+Load Port:	JEDDAH
+Discharge Port:	Laem Chabang, Thailand
+Freight:	COLLECT
+Net Weight:	193,361 KG
+Total Containers:	2 X 20'GP
+Gross Wt (kgs):	193850
+Commodity:	Frozen fish
+Vessel / Voyage:	MV AURORA V.229

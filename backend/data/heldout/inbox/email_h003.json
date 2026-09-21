@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h003",
+  "from": "user3@shipco.example",
+  "subject": "Invoice SO848778 - attached documents",
+  "body": "We received the carrier's draft. Please compare with what we submitted (SI attached) and flag differences.\n\nBest regards,\nHana Kim\nOakmont Shipping Agency",
+  "attachments": [
+    "attachments/email_h003_SI.txt",
+    "attachments/email_h003_BL.docx"
+  ]
+}

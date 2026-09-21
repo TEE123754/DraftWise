@@ -1,0 +1,14 @@
+SI - Shipper's Letter of Instruction
+========================================
+
+Shipper:	Lotus Garments Pvt Ltd
+Consignee:	Delta Auto Parts Co., Ltd
+Notify Party:	Summit Electronics Corp
+Port of Loading:	BUSAN
+Discharge Port:	TBA
+Commodity:	Timber planks
+Vessel / Voyage:	MV STELLA V.849
+No. of Containers:	12 x 20' FCL
+Gross Weight:	88,500.00 KG
+Net Weight:	87,699 KG
+Freight:	PREPAID

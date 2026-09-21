@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h014",
+  "from": "user14@shipco.example",
+  "subject": "BK466129 / vessel docs",
+  "body": "Attaching SI and BL draft for BK466129. Can you confirm everything matches?\n\nBest regards,\nLucas Ferreira\nNorthwind Logistics",
+  "attachments": [
+    "attachments/email_h014_SI.txt",
+    "attachments/email_h014_BL.docx"
+  ]
+}

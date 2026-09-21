@@ -1,0 +1,14 @@
+BILL OF LADING - DRAFT
+========================================
+
+Shipper: Lotus Garments Pvt Ltd
+Consignee (Non-Negotiable): DELTA AUTO PARTS CO., LTD
+Notify: Summit Electronics Corp
+Port of Loading: BUSAN
+Discharge Port: DURBAN
+Freight: PREPAID
+Net Weight: 88,126 KG
+No. of Containers: 12 X 20'GP
+Gross Weight: 88500 KGS
+Vessel / Voyage: MV STELLA V.621
+Commodity: Frozen fish

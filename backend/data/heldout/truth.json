@@ -1,0 +1,182 @@
+{
+ "email_h001": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h002": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h003": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h004": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h005": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h006": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h007": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h008": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h009": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h010": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h011": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h012": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h013": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h014": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h015": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h016": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h017": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h018": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h019": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h020": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h021": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h022": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h023": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h024": {
+  "category": "BL_COMPARISON"
+ },
+ "email_h025": {
+  "category": "SI_REQUEST"
+ },
+ "email_h026": {
+  "category": "SI_REQUEST"
+ },
+ "email_h027": {
+  "category": "SI_REQUEST"
+ },
+ "email_h028": {
+  "category": "SI_REQUEST"
+ },
+ "email_h029": {
+  "category": "SI_REQUEST"
+ },
+ "email_h030": {
+  "category": "SI_REQUEST"
+ },
+ "email_h031": {
+  "category": "SI_REQUEST"
+ },
+ "email_h032": {
+  "category": "SI_REQUEST"
+ },
+ "email_h033": {
+  "category": "SI_REQUEST"
+ },
+ "email_h034": {
+  "category": "SI_REQUEST"
+ },
+ "email_h035": {
+  "category": "INVOICE_QUERY"
+ },
+ "email_h036": {
+  "category": "INVOICE_QUERY"
+ },
+ "email_h037": {
+  "category": "INVOICE_QUERY"
+ },
+ "email_h038": {
+  "category": "INVOICE_QUERY"
+ },
+ "email_h039": {
+  "category": "INVOICE_QUERY"
+ },
+ "email_h040": {
+  "category": "INVOICE_QUERY"
+ },
+ "email_h041": {
+  "category": "INVOICE_QUERY"
+ },
+ "email_h042": {
+  "category": "INVOICE_QUERY"
+ },
+ "email_h043": {
+  "category": "INVOICE_QUERY"
+ },
+ "email_h044": {
+  "category": "INVOICE_QUERY"
+ },
+ "email_h045": {
+  "category": "GENERAL"
+ },
+ "email_h046": {
+  "category": "GENERAL"
+ },
+ "email_h047": {
+  "category": "GENERAL"
+ },
+ "email_h048": {
+  "category": "GENERAL"
+ },
+ "email_h049": {
+  "category": "GENERAL"
+ },
+ "email_h050": {
+  "category": "GENERAL"
+ },
+ "email_h051": {
+  "category": "GENERAL"
+ },
+ "email_h052": {
+  "category": "GENERAL"
+ },
+ "email_h053": {
+  "category": "SPAM"
+ },
+ "email_h054": {
+  "category": "SPAM"
+ },
+ "email_h055": {
+  "category": "SPAM"
+ },
+ "email_h056": {
+  "category": "SPAM"
+ },
+ "email_h057": {
+  "category": "SPAM"
+ },
+ "email_h058": {
+  "category": "SPAM"
+ },
+ "email_h059": {
+  "category": "SPAM"
+ },
+ "email_h060": {
+  "category": "SPAM"
+ }
+}

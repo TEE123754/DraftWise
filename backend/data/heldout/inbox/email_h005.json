@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h005",
+  "from": "user5@acme-trade.example",
+  "subject": "Documents for review",
+  "body": "Attaching SI and BL draft for BK849348. Can you confirm everything matches?\n\nBest regards,\nPriya Nair\nCoastline Freight Services",
+  "attachments": [
+    "attachments/email_h005_SI.docx",
+    "attachments/email_h005_BL.docx"
+  ]
+}

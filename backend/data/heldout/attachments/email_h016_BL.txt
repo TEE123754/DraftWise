@@ -1,0 +1,14 @@
+BILL OF LADING - DRAFT
+========================================
+
+Shipper Name: Sunrise Textile Mills Ltd
+Receiver: Summit Electronics Corp
+Notify Party: Summit Electronics Corp
+POL: ROTTERDAM
+POD: QINGDAO
+Net Weight: 84,712 KG
+Freight: COLLECT
+Containers Qty: 6 containers
+G.W.: 85,050 KG
+Vessel / Voyage: MV ORIENT V.619
+Commodity: Frozen fish

@@ -1,0 +1,14 @@
+DRAFT BILL OF LADING
+========================================
+
+Shipper/Exporter: PINNACLE STEEL CORPORATION
+Consignee (Non-Negotiable): HARBOR LIGHT TRADING CO
+Notify Party: HARBOR LIGHT TRADING CO
+Port of Loading: HAMBURG
+Port of Discharge: Qingdao, China
+Commodity: Frozen fish
+Net Weight: 167,228 KG
+Container Count: 9 x 20' FCL
+Gross Weight: 167,750.00 KG
+Freight: COLLECT
+Vessel / Voyage: MV ORIENT V.138

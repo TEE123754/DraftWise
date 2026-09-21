@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h024",
+  "from": "user24@shipco.example",
+  "subject": "RE: SO146682 - please check",
+  "body": "Please verify the draft bill of lading vs the shipping instructions and let us know of any discrepancies.\n\nBest regards,\nAmara Okafor\nCoastline Freight Services",
+  "attachments": [
+    "attachments/email_h024_SI.txt",
+    "attachments/email_h024_BL.txt"
+  ]
+}

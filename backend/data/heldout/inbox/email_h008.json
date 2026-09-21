@@ -1,0 +1,10 @@
+{
+  "email_id": "email_h008",
+  "from": "user8@freightline.example",
+  "subject": "Fwd: BL draft BK562308",
+  "body": "Draft B/L attached - validate against the SI please. Booking BK562308.\n\nBest regards,\nTomas Weber\nNorthwind Logistics",
+  "attachments": [
+    "attachments/email_h008_SI.txt",
+    "attachments/email_h008_BL.pdf"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "email_id": "email_h057",
+  "from": "user57@shipco.example",
+  "subject": "Parcel on hold",
+  "body": "Your parcel is on hold at the depot. Pay a $2.99 customs fee here: http://track-parcel.example/pay\n\nBest regards,\nKenji Aoki\nCoastline Freight Services",
+  "attachments": []
+}

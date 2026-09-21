@@ -1,0 +1,7 @@
+{
+  "email_id": "email_h041",
+  "from": "user41@acme-trade.example",
+  "subject": "Invoice query INV-22401",
+  "body": "We were billed twice for documentation fee, see INV-76855. Kindly correct.\n\nBest regards,\nKenji Aoki\nNorthwind Logistics",
+  "attachments": []
+}

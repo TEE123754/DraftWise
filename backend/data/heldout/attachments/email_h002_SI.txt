@@ -1,0 +1,14 @@
+Booking Instruction
+========================================
+
+Consignor:	Pinnacle Steel Corporation
+Consignee:	Zenith Polymers Pte Ltd
+Notify:	Sunrise Textile Mills Ltd
+Port of Loading:	LAEM CHABANG
+Destination Port:	FELIXSTOWE
+Commodity:	Frozen fish
+Freight:	PREPAID
+Container Count:	1 x 40'HC
+Gross Wt (kgs):	78,250 KG
+Net Weight:	77,870 KG
+Vessel / Voyage:	MV STELLA V.762

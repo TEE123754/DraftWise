@@ -1,0 +1,7 @@
+{
+  "email_id": "email_h054",
+  "from": "user54@acme-trade.example",
+  "subject": "Mailbox almost full",
+  "body": "Your mailbox storage is 98% full. Verify your account immediately at http://webmail-verify.example to avoid suspension.\n\nBest regards,\nKenji Aoki\nOakmont Shipping Agency",
+  "attachments": []
+}

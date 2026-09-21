@@ -1,0 +1,14 @@
+Booking Instruction
+========================================
+
+Shipper Name: NORDIC HOME GOODS GMBH
+Consignee / Buyer: Blue Lagoon Seafoods Inc
+Notify: Blue Lagoon Seafoods Inc
+Load Port: ANTWERP
+Destination Port: LAEM CHABANG
+Vessel / Voyage: MV ORIENT V.553
+Net Weight: 77,159 KG
+Containers Qty: 11 X 20'GP
+Gross Wt (kgs): 77,750 KG
+Freight: COLLECT
+Commodity: Auto spare parts
