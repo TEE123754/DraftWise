@@ -5,15 +5,17 @@
 **Track:** Shipping Document Verification (Shipping Instructions vs. draft Bill of Lading)  
 
 <div align="center">
-  <img src="frontend/public/brand/logo.png" alt="DraftWise Logo" width="300">
+  <img src="docs/assets/draftwise-logo.png" alt="DraftWise Logo" width="320">
   <h3>Smart Email. Smoother Logistics.</h3>
   <p><em>Every draft checked. Every change explained.</em></p>
   <br/>
   <a href="https://draft-wise-gold.vercel.app/"><strong>🚀 Live Demo</strong></a>
   &nbsp;|&nbsp;
+  <a href="#why-choose-draftwise"><strong>💡 Why DraftWise</strong></a>
+  &nbsp;|&nbsp;
   <a href="#ai-design-principles"><strong>⚙️ AI Design Principles</strong></a>
   &nbsp;|&nbsp;
-  <a href="#local-setup"><strong>🛠 Local Setup</strong></a>
+  <a href="#run-on-localhost-quick-start"><strong>🛠 Run Locally</strong></a>
   &nbsp;|&nbsp;
   <a href="#system-architecture"><strong>🏗 Architecture</strong></a>
   &nbsp;|&nbsp;
@@ -51,6 +53,8 @@ The project was built by **Team Commitment Issues** for the **Averis x Monash Ha
 
 ## Table of Contents
 
+- [Why Choose DraftWise](#why-choose-draftwise)
+- [Run on Localhost (Quick Start)](#run-on-localhost-quick-start)
 - [Live Deployment](#live-deployment)
 - [Hackathon Alignment](#hackathon-alignment)
   - [Problem statement coverage](#problem-statement-coverage)
@@ -64,6 +68,7 @@ The project was built by **Team Commitment Issues** for the **Averis x Monash Ha
   - [6. Real, durable side-effects](#6-real-durable-side-effects)
 - [Core Features](#core-features)
 - [Signature Workflows](#signature-workflows)
+- [User Workflow](#user-workflow)
 - [System Architecture](#system-architecture)
 - [Processing Pipeline](#processing-pipeline)
 - [Verification Engine](#verification-engine)
@@ -72,7 +77,7 @@ The project was built by **Team Commitment Issues** for the **Averis x Monash Ha
 - [Benchmark & Validation Results](#benchmark--validation-results)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
-- [Local Setup](#local-setup)
+- [Development & Testing](#development--testing)
 - [Environment Variables](#environment-variables)
 - [Deployment](#deployment)
 - [Trying the Product](#trying-the-product)
@@ -86,12 +91,233 @@ The project was built by **Team Commitment Issues** for the **Averis x Monash Ha
 
 ---
 
+## Why Choose DraftWise
+
+> **The problem.** A draft Bill of Lading that disagrees with the Shipping Instructions on a single field — a container count, a consignee, a weight — can hold up a shipment or force an amendment. Checking by hand means opening two documents per email, hunting for seven values, and repeating the whole exercise when the carrier sends a revised draft. Fully automatic tools fail in the opposite way: they say *"looks fine"* when they have not really read the document.
+>
+> **DraftWise is built for that gap.** It does the reading and comparing, shows the evidence for every value, and says *"a person needs to look at this"* instead of guessing.
+
+### Our selling points
+
+| | Selling point | What it means for you | Proof in this repo |
+|---|---|---|---|
+| 🔎 | **Evidence on every value** | Click any extracted value and see the exact quote, page or cell it came from. No "trust me" numbers. | `ground_extraction` rejects any value whose quote is not in the cited block of that document. |
+| 🛑 | **Never a false all-clear** | "No mismatch detected" appears only when all seven fields are supported matches. Missing, unreadable or ambiguous data becomes a visible review item. | Two missing values are never a match; an exhaustive invariant test guarantees nothing shows green unless a comparison actually passed. |
+| 🔁 | **The whole amendment loop, not just a diff** | Preview exactly what to ask for, ingest the corrected draft, and see what was fixed, what is still wrong, and what **regressed**. | Regression detection (`fixed` / `unchanged` / `new` / `regressed` / `unresolved`) against one pinned SI; correction previews with a "what would remain" forecast. |
+| 🎯 | **One question at a time** | The next-action card asks the single decision that unblocks the most checks, with the evidence already on screen and an honest *I cannot confirm* button. | Dependency-ordered action planner; dismissing a question never produces a clean result. |
+| 💸 | **Predictable AI cost** | Rules do the work by default; AI runs only when rules abstain or you ask. The whole 520-email sample scores offline in about 4 seconds with zero provider calls. | `BoundedAI`: content-hash cache, per-workspace daily budget (`AI_DAILY_BUDGET`), back-off on rate limits, rules fallback. |
+| 🧑‍⚖️ | **You stay in control** | Nothing is sent for you. Exports say *Copied*, never *Sent* or *Corrected*. A model cannot approve an alias or pick a disputed SI on your behalf. | Only a reviewer or admin can approve a scoped equivalence rule; rules never override numbers, countries or `ON BEHALF OF`. |
+| 📄 | **Copes with messy reality** | TXT, PDF, Word tables, Excel, scanned pages (OCR), bilingual labels, `22 MT` vs `22,000 KG`, `TBA` placeholders, misleading subjects, quoted email history. | Parser suite, unit-conversion and label-alias tests, held-out documents in different layouts. |
+| 🛡️ | **Safety built in** | Suspicious mail is held for review before any document is processed; drift is monitored against a *reviewed* baseline; every workspace is isolated. | Explainable safety signals, alerts with source links, Row Level Security with tenant-isolation tests. |
+| 📊 | **Honest numbers** | We publish the organizer score **and** the weaker held-out result, with the caveats. You can reproduce both. | `scripts/benchmark.py` (offline by default) and the held-out evaluation; see [Benchmark & Validation Results](#benchmark--validation-results). |
+| ⚡ | **Try it in seconds** | No account, no install: open the hosted demo and work through real sample emails in an isolated sandbox. Or run the whole stack on localhost. | Demo sandbox sessions; [localhost quick start](#run-on-localhost-quick-start). |
+| ♿ | **Designed to be used** | Attention-first inbox, plain-language states with text chips (not colour alone), page-aware assistant, keyboard-accessible tooltips, mobile layouts. | axe accessibility checks in the Playwright suite; layouts verified at 390, 768 and 1440 px. |
+
+### How we are different
+
+The comparison below is against a generic *"an LLM reads two documents and summarises the differences"* tool, not against any named product.
+
+| Question | A typical AI document checker | DraftWise |
+|---|---|---|
+| What does a check return? | A summary paragraph or a single match score | Exactly seven field decisions, each with SI value, BL value, normalisation applied and source quote |
+| A value cannot be read | Guessed, or silently treated as equal | `missing` / `uncertain` → `NEEDS_REVIEW` with a typed reason; never a match |
+| The carrier sends a revised draft | Start again from scratch | Old vs new against the *same pinned SI*: what was fixed, what regressed, what is unresolved |
+| Asking for a correction | A hand-written or model-generated message | Patches built from validated source values, a forecast of what would remain, an editable message you copy and send yourself |
+| Where AI sits | At every step | Rules first; AI only when needed, cached, budgeted and grounded in quotes |
+| Learning from reviewers | Opaque retraining, or nothing | Explicit, customer-scoped, human-approved rules with an impact preview and one-click revocation |
+| The inbox | A chronological list | Attention-first: one state per email, reason chips and a concrete next action |
+| Reporting accuracy | One headline number | Sample score, held-out score and a written list of limitations |
+
+### Choose DraftWise if you…
+
+- **review draft BLs** and are tired of re-checking seven fields by eye every time a carrier revises the document;
+- **cannot accept a false "all clear"** and would rather be asked than be wrong;
+- want AI **without an unpredictable bill** or a black box you cannot audit;
+- need to **show your working** — to a colleague, a customer or an auditor — with the source quote one click away;
+- want to **try before committing**: the demo needs no sign-up, and the whole stack runs on localhost.
+
+### What we deliberately do not claim
+
+- We do **not** claim that no other product can compare shipping documents or draft amendment requests — comparison alone is not our claim. Our difference is the evidence-first amendment loop and how conservatively we treat uncertainty.
+- We do **not** claim measured time savings. That the guided workflow reduces reviewer effort is a hypothesis we designed for, not a result we have measured.
+- A **Checked** result covers the seven fields only. It is not legal, customs or cargo-release approval.
+
+---
+
+## Run on Localhost (Quick Start)
+
+You will run **three processes** on your own machine. They share one hosted **Supabase** project (a free one is enough) for PostgreSQL, Auth and Storage.
+
+| Process | What it does | Command | Address |
+|---|---|---|---|
+| **API** (FastAPI) | Serves the REST API | `uv run shipping-api` | http://localhost:8000 |
+| **Worker** | Reads documents and runs checks in the background | `uv run python -m app.workers.runner` | none (no port) |
+| **Frontend** (Next.js) | The website and the workspace | `pnpm dev` | http://localhost:3000 |
+
+> ⚠️ **The worker is a separate process.** If you skip it the site still loads, but emails stay at *"documents not read yet"* because nothing is reading them. `/ready` returns `503` until a worker is running.
+
+### Prerequisites
+
+| Tool | Version | Notes |
+|---|---|---|
+| [uv](https://docs.astral.sh/uv/) | 0.8+ | Installs the right Python (3.11 – 3.13) for you |
+| Node.js | 22+ | |
+| pnpm | 10.15+ | `corepack enable` is the easiest way to get it |
+| Supabase project | any | Free tier is fine |
+| Git | any | |
+| Tesseract OCR | optional | Only needed for scanned PDFs. On Windows set `TESSERACT_CMD` if it is not on `PATH` |
+| AI key (Gemini or Morpheus) | optional | Not needed to try the app: rules run first, and AI is only used when you ask |
+
+### Step 1 — Get the code
+
+```bash
+git clone https://github.com/TEE123754/DraftWise.git
+cd DraftWise
+```
+
+> **Windows:** if the folder name contains `[` or `]` (for example `[!] Problem Statement`), PowerShell's `-Path` treats them as wildcards and some tools misbehave. Clone into a plain folder name such as `C:\dev\DraftWise`.
+
+### Step 2 — Prepare Supabase (once)
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Open the **SQL editor** and run [`database/schema.sql`](database/schema.sql) on the fresh project. Then run every file in [`database/migrations/`](database/migrations/) **in filename order** (`002…`, `003…`, and so on). Do not run `amendment_workspace.sql`; it is already part of the schema.
+3. **Storage → New bucket** named `shipping-originals`, **private**.
+4. **Authentication → URL configuration:** add `http://localhost:3000/dashboard` as an allowed redirect URL.
+5. Collect these values from the Supabase dashboard:
+
+| Value | Where to find it |
+|---|---|
+| Project URL | Settings → API (e.g. `https://abcd1234.supabase.co`) |
+| Service-role / secret key | Settings → API keys (**backend only**, never put it in the frontend) |
+| Anon / publishable key | Settings → API keys (safe for the frontend) |
+| Database connection string | Connect → **Session pooler** (use this if your network is IPv4-only) |
+
+### Step 3 — Configure the backend
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+```powershell
+# Windows PowerShell
+Copy-Item backend\.env.example backend\.env
+```
+
+Edit `backend/.env`. These are the **minimum** values:
+
+```env
+DATABASE_URL=postgresql://...            # your Supabase connection string
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<service-role or secret key>
+SUPABASE_JWT_ISSUER=https://<project-ref>.supabase.co/auth/v1
+ALLOWED_ORIGINS=http://localhost:3000
+DEMO_ENABLED=true                        # enables the no-login demo
+```
+
+The demo seeds itself from the organizer's participant bundle (`inbox/` + `attachments/`; it contains no answer key), which is embedded at `backend/data/sdoc-hackathon-bundle.zip`. `DEMO_DATASET_PATH` is optional: when it is unset, or points at a file that does not exist, the backend falls back to that embedded bundle.
+
+Leave the AI variables empty to run on rules only. Add `GEMINI_API_KEY` (or the Morpheus variables) later if you want the *Review with AI* button to work.
+
+### Step 4 — Terminal 1: start the API
+
+```bash
+cd backend
+uv sync --frozen
+uv run shipping-api
+```
+
+You should see `Uvicorn running on http://127.0.0.1:8000`. Check it from another terminal:
+
+```bash
+curl http://localhost:8000/health
+```
+
+```json
+{ "status": "ok", "version": "pipeline-v1" }
+```
+
+### Step 5 — Terminal 2: start the worker
+
+```bash
+cd backend
+uv run python -m app.workers.runner
+```
+
+Leave it running. Now `curl http://localhost:8000/ready` returns `{"status":"ready","database":"ok","worker":"active"}`.
+
+### Step 6 — Terminal 3: start the frontend
+
+```bash
+cp frontend/.env.example frontend/.env.local
+```
+
+```powershell
+# Windows PowerShell
+Copy-Item frontend\.env.example frontend\.env.local
+```
+
+Edit `frontend/.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon or publishable key>
+```
+
+Then:
+
+```bash
+cd frontend
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+### Step 7 — Open it
+
+| Address | What you should see |
+|---|---|
+| http://localhost:3000 | The DraftWise landing page |
+| http://localhost:3000/demo | **Start the demo** — an isolated sample workspace, no account needed |
+| http://localhost:3000/sign-in | Email sign-in (Supabase sends a one-time code or link) |
+| http://localhost:8000/docs | Interactive OpenAPI documentation |
+| http://localhost:8000/ready | `worker: "active"` once the worker is running |
+
+**Your first 60 seconds:** open `/demo` → **Start the demo** → **Inbox**. The inbox appears straight away; the worker reads documents in the background, so rows marked *needs review — documents not read yet* turn into *Checked* or *Mismatch found* as it works (about 9 minutes for all 126 comparison emails against a remote database, measured once; the first page fills first). Open a **Mismatch found** email to see the seven fields side by side.
+
+### Just want to see the engine, with no setup?
+
+You can exercise the comparison logic without Supabase, keys or a browser:
+
+```bash
+cd backend
+uv sync --frozen
+uv run pytest tests/unit -q                    # 228 tests, no database needed
+uv run shipping-verify --si path/to/instructions.txt --bl path/to/draft.txt --output report.json
+```
+
+Or run everything in containers (still uses your Supabase project): `docker compose -f docker/compose.dev.yml up --build` starts the API, the worker and the frontend together.
+
+### If something does not work
+
+| Symptom | Fix |
+|---|---|
+| Emails never leave *documents not read yet* | The worker is not running (Step 5). Check `/ready`. |
+| The site cannot reach the API / CORS errors | `ALLOWED_ORIGINS` must contain the exact frontend origin. If port 3000 was busy and Next chose 3001, add `http://localhost:3001` and restart the API. |
+| `uv run shipping-api` says the port is in use | Something is already on 8000. The launcher is fixed to `127.0.0.1:8000`; stop the other process. |
+| `Failed to connect` to the database | Use the Supabase **Session pooler** string, and make sure the password has no unescaped special characters. |
+| *Another `next dev` is already running* | Only one dev server per project folder is allowed. Use the address it prints, or stop the other one. |
+| Sign-in link redirects to an error page | Add `http://localhost:3000/dashboard` to Supabase's allowed redirect URLs (Step 2). |
+
+More in [Troubleshooting](#troubleshooting).
+
+---
+
 ## Live Deployment
 
 | Service | Platform | URL | Purpose |
 |---|---|---|---|
 | Frontend | Vercel | [https://draft-wise-gold.vercel.app](https://draft-wise-gold.vercel.app/) | Next.js App Router site: public landing pages, no-login demo and the signed-in workspace. |
-| Backend API | Railway | `https://<your-railway-service>.up.railway.app` | FastAPI service plus the durable processing worker, built from `docker/backend.Dockerfile` via the root `railway.json`. |
+| Backend API | Railway | [https://draftwise-production.up.railway.app](https://draftwise-production.up.railway.app/health) | FastAPI service built from `docker/backend.Dockerfile` via the root `railway.json`. The background worker is a separate process from the same image (see [Deployment](#deployment)). |
 | Database, Auth, Storage | Supabase | Project-specific | PostgreSQL (schema in `database/`), email sign-in, and a private `shipping-originals` bucket. |
 
 Source code: [github.com/TEE123754/DraftWise](https://github.com/TEE123754/DraftWise)
@@ -100,7 +326,7 @@ The frontend is deployed with **Vercel root directory `frontend/`**. The backend
 
 ```env
 # Production frontend variable (Vercel)
-NEXT_PUBLIC_API_URL=https://<your-railway-service>.up.railway.app
+NEXT_PUBLIC_API_URL=https://draftwise-production.up.railway.app
 ```
 
 ---
@@ -280,6 +506,129 @@ After confirming a supported alias, a reviewer can propose it as a rule. A super
 
 ---
 
+## User Workflow
+
+DraftWise is organised around one question: **"What should I do next?"** Every screen answers it for the person using it.
+
+### Who uses it
+
+| Role | Typical person | What they can do |
+|---|---|---|
+| **Viewer** | Manager, auditor | Read the dashboard, inbox, cases and analytics. Cannot change anything. |
+| **Operator** | Documentation clerk | Add emails and documents, run checks, retry jobs, open cases and upload returned drafts. |
+| **Reviewer** *(primary user)* | Shipping operations reviewer | Everything an operator can, plus confirm which SI and BL apply, correct a field against its evidence, prepare correction requests, release safety holds, resolve alerts, and approve or revoke equivalence rules. |
+| **Admin** | Team lead, workspace owner | Everything a reviewer can, plus budgeted AI classifier evaluations and storage clean-up. |
+
+Signing in creates a private workspace with the admin role. Demo sessions get an isolated sandbox.
+
+### The end-to-end journey
+
+```mermaid
+flowchart TD
+  A["Open DraftWise: Try Demo or sign in"] --> B["Overview: what needs you today"]
+  B --> C["Inbox: pick an email by state and reason chips"]
+  C --> D{"State of the email"}
+  D -->|"Spam or Held for safety"| S["Inspect the signals. Confirm spam, or release with a reason"]
+  D -->|"Needs documents or Waiting for draft"| M["Use the reply template, upload the file, or confirm a suggested link"]
+  D -->|"Needs review"| R["Open the case. Confirm the value the evidence supports"]
+  D -->|"Mismatch found"| X["Open the case. See SI and BL side by side with source quotes"]
+  D -->|"Checked"| K["Done: No mismatch detected on all seven fields"]
+  D -->|"Classified, no check needed"| G["Act on the category: SI request, invoice query or general mail"]
+  M --> C
+  R --> V["Automatic re-check"]
+  V --> X
+  V --> K
+  X --> P["Select confirmed issues. Preview the correction request"]
+  P --> Q["Edit the message. Copy it. Send it yourself"]
+  Q --> W["Wait for the corrected draft"]
+  W --> U["Upload the returned draft"]
+  U --> Z["Whole draft re-checked against the pinned SI"]
+  Z -->|"All issues fixed"| K
+  Z -->|"Regressed or unresolved fields"| X
+```
+
+### Step by step
+
+| # | You | DraftWise | Where |
+|---|---|---|---|
+| 1 | **Start.** Click **Try Demo**, or sign in with your email address. | Creates an isolated sandbox, or your private workspace on first sign-in. | `/demo`, `/sign-in` |
+| 2 | **See what needs you.** Open the overview. | Counts by state, the work that needs a person today, and processing progress. Panels are customisable. | `/dashboard` |
+| 3 | **Pick an email.** Filter the inbox by state or category, or search. | One state per email, text reason chips (`missing_si`, `mismatch:container_count` …) and the recommended action. | `/inbox` |
+| 4 | **Understand it.** Open the email. | Shows the six-step review workflow (below), safety signals, attached documents and their roles. | `/inbox/[id]` |
+| 5 | **Run the check.** Click **Review with local rules** (default) or **Review with AI**. | Reads and extracts the documents, grounds each value in its quote, compares against the SI. AI is used only when you ask or rules abstain. | same page |
+| 6 | **Open the case.** Confirm which SI and BL apply. | Pins the SI, BL and policy versions and opens the amendment case. | `/cases/[id]` |
+| 7 | **Resolve uncertainty.** Answer the next-action card, or correct a field against its evidence. | One question at a time, ordered by what unblocks most checks. A correction writes an immutable revision and recomputes the report. | case page |
+| 8 | **Ask for the fix.** Select confirmed issues and click **Preview correction request**. | Shows *Current BL → Required by SI* per field and forecasts what would remain. Nothing changes yet. | case page |
+| 9 | **Send it.** Edit the message, then **Copy**. | Records what you copied. It does not send email; you send it from your own mail client. | case page |
+| 10 | **Receive the corrected draft.** Upload it to the case. | Verifies the *entire* new BL against the same pinned SI, then reports fixed, regressed and unresolved fields. | case page |
+| 11 | **Close it out.** | When all seven fields are supported matches the case shows **Checked** and moves to Completed. | `/completed` |
+| 12 | **Housekeeping.** | Alerts (spam, phishing, drift), Rules (approved equivalences), Analytics (accuracy), Trash (30-day restore), connections. | `/alerts`, `/rules`, `/analytics`, `/trash`, `/settings/connections` |
+
+At any point, the **assistant** (bottom-right) can answer *"what needs my attention?"* or, while an email or case is open, *"what should I do here?"* — from your workspace's own data, citing cases.
+
+### The six-step review workflow on every email
+
+Each email page walks the same six steps, so you always know how far it got and what is blocking it:
+
+| Step | Shows |
+|---|---|
+| **1. Intake** | Email received; attachments linked to this request |
+| **2. Classify** | Category (`BL COMPARISON`, `SI REQUEST`, `INVOICE QUERY`, `GENERAL`, `SPAM`), or *Intent needs review* |
+| **3. Documents** | `SI: found / missing. BL: found / missing.` |
+| **4. Extract** | Processing, or how many documents were read and which fields are missing or uncertain |
+| **5. Compare** | *All seven required fields match*, *Differences require review*, *Not required for this email category*, or *Comparison is incomplete* |
+| **6. Decide / Reply** | The single recommended next action, or *Review the safety hold before processing* |
+
+### The amendment loop
+
+```mermaid
+sequenceDiagram
+  actor R as Reviewer
+  participant D as DraftWise
+  actor C as Carrier or shipper
+  R->>D: Open the case for a mismatch email
+  D-->>R: Seven fields side by side with source quotes
+  R->>D: Select confirmed issues and preview the correction
+  D-->>R: Current BL to Required by SI, and "2 issues would remain"
+  R->>R: Edit the message and copy it
+  R->>C: Send the request from your own mail client
+  C-->>R: Returned draft BL
+  R->>D: Upload the returned draft
+  D->>D: Verify the whole new BL against the pinned SI
+  D-->>R: Consignee fixed, weight regressed, one issue remains
+  R->>D: Open the regressed field's evidence
+```
+
+### Four short scenarios
+
+**1. Everything matches**
+- *You see:* a green **Checked** email; the case shows seven matches.
+- *You do:* nothing. Note that `22,000 KG` on one document and `22 MT` on the other is a match, not a weight discrepancy.
+
+**2. The container count differs**
+- *You see:* **Mismatch found** with reason chip `mismatch:container_count`; the SI says 3 and the BL says 4; the other six fields match.
+- *You do:* preview the correction, copy the request, send it, upload the returned draft. DraftWise confirms the count is fixed and that no other field changed.
+
+**3. The draft never arrived**
+- *You see:* **Needs documents** (attachments claimed but absent) or **Waiting for draft** (the sender was asked to send it), with a reason chip such as `missing_bl`.
+- *You do:* use the reply template to ask the sender, upload the file yourself, or confirm a suggested link to a document in another email. DraftWise never invents a value for the missing document, and only suggests links on an **exact** reference match.
+
+**4. A suspicious email**
+- *You see:* **Held for safety** in red, with the explainable signals (for example a request for account credentials combined with urgency or a link, or an executable attachment).
+- *You do:* inspect the signals and either confirm spam (it moves to Trash, restorable for 30 days) or release it with a written reason. No document in a held email is processed until you release it.
+
+### Supervisor workflow: teaching DraftWise a safe alias
+
+1. While reviewing a case you confirm that two spellings really are the same (say, a port or company name).
+2. You propose an equivalence rule for that field and that customer.
+3. A reviewer or admin sees the exact scope, the evidence and a preview of which past cases it would touch, then approves it.
+4. Future matches for **that customer only** show an *Approved rule* badge.
+5. Revoking the rule marks affected reports as needing a re-check. Original reports are never rewritten.
+
+Numbers, countries and identity qualifiers such as `ON BEHALF OF` can never be equated by a rule.
+
+---
+
 ## System Architecture
 
 ```mermaid
@@ -306,7 +655,7 @@ flowchart LR
   H -->|"Aggregate metrics only"| L
 ```
 
-**Deployment baseline:** one Railway container hosts a single Uvicorn process and one supervised async worker loop started from the FastAPI lifespan. Jobs and checkpoints live in PostgreSQL, not Python memory, so a restart never loses work. Parser and OCR execution is bounded by time and memory limits. A separate worker service can use the identical claim protocol when resources allow. No Redis, vector database or always-on multi-agent supervisor is required.
+**Deployment baseline:** the **API** (Uvicorn) and the **worker** are two separate processes built from the same image. The API validates requests and enqueues work; the worker claims jobs from PostgreSQL and runs the parsers, OCR, AI adapter and verifier. Jobs and checkpoints live in the database, not in Python memory, so a restart never loses work, and extra workers can share the queue through the same claim protocol. Parser and OCR execution is bounded by time and memory limits. No Redis, vector database or always-on multi-agent supervisor is required. `docker/compose.dev.yml` shows the split.
 
 ### Service boundaries
 
@@ -598,97 +947,9 @@ CI (`.github/workflows/test-application.yml`) runs the backend suite against Pos
 
 ---
 
-## Local Setup
+## Development & Testing
 
-You need two terminals: one for the backend (plus its worker) and one for the frontend.
-
-### Prerequisites
-
-| Tool | Version |
-|---|---|
-| Python | 3.11 – 3.13 (3.12 recommended) |
-| [uv](https://docs.astral.sh/uv/) | 0.8+ |
-| Node.js | 22+ |
-| pnpm | 10.15 |
-| Supabase project | Any (a free project is enough) |
-| Tesseract OCR | Optional — needed only for scanned PDFs |
-| Docker | Optional — only for the container path |
-
-```bash
-git clone https://github.com/TEE123754/DraftWise.git
-cd DraftWise
-```
-
-> **Windows note:** if your checkout folder name contains `[` or `]`, PowerShell's `-Path` treats them as wildcards. Use `-LiteralPath`, or clone into a plain folder name.
-
-### Step 1 — Create the database
-
-1. Create a Supabase project.
-2. In the SQL editor (or with a migration-owner connection), apply [`database/schema.sql`](database/schema.sql) **once** to a fresh project.
-3. Apply every numbered file in [`database/migrations/`](database/migrations/) in order. Do **not** re-apply `amendment_workspace.sql`; it is already part of the fresh schema.
-4. Create a private Storage bucket named `shipping-originals`.
-5. Optionally confirm nothing was missed:
-
-```bash
-python scripts/check_migrations.py
-```
-
-### Step 2 — Configure the backend
-
-```bash
-cp backend/.env.example backend/.env
-```
-
-```powershell
-# Windows PowerShell
-Copy-Item backend\.env.example backend\.env
-```
-
-Fill in at least `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_ISSUER` (project URL + `/auth/v1`) and an AI provider key. See [Environment Variables](#environment-variables).
-
-### Step 3 — Run the backend and worker
-
-```bash
-cd backend
-uv sync --frozen
-uv run shipping-api
-```
-
-In a second terminal, start the durable worker:
-
-```bash
-cd backend
-uv run python -m app.workers.runner
-```
-
-Verify the API:
-
-```bash
-curl http://localhost:8000/health
-```
-
-```json
-{ "status": "ok", "version": "pipeline-v1" }
-```
-
-`/ready` additionally checks PostgreSQL and that a worker heartbeat is recent, and returns `503` if the worker is not running. OpenAPI docs are served at `/docs`.
-
-### Step 4 — Run the frontend
-
-```bash
-cp frontend/.env.example frontend/.env.local
-cd frontend
-pnpm install --frozen-lockfile
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-### Step 5 — (Optional) Local no-login demo
-
-Set `DEMO_ENABLED=true` in `backend/.env`, restart the API and worker, then open `http://localhost:3000/demo` and choose **Start the demo**. No account is needed.
-
-The demo seeds itself from the organizer's participant bundle (`inbox/` + `attachments/`; it contains no answer key), which is embedded at `backend/data/sdoc-hackathon-bundle.zip` so the hosted demo works on Railway. `DEMO_DATASET_PATH` is optional: when it is unset, or points at a file that does not exist, the backend falls back to that embedded bundle. Set it only to use a different ZIP or folder.
+The [Quick Start](#run-on-localhost-quick-start) gets the whole app running on localhost. This section covers running the verification engine without Supabase, the test suites, the benchmark and Docker.
 
 ### Try the verifier without any keys
 
@@ -775,12 +1036,13 @@ MORPHEUS_MODEL=deepseek-v4-pro
 AI_DAILY_BUDGET=30                      # live AI calls per workspace per day
 FREE_ONLY=true
 
-# Worker and limits
-WORKER_ENABLED=true
-WORKER_CONCURRENCY=1
+# Worker (a separate process: python -m app.workers.runner) and limits
+WORKER_CONCURRENCY=1                    # concurrent job slots per worker (1-8)
 PROVIDER_CONCURRENCY=2
 MAX_UPLOAD_BYTES=20971520               # 20 MB
 MAX_PDF_PAGES=20
+OCR_LANGUAGES=eng
+TESSERACT_CMD=                          # absolute path to tesseract(.exe) if it is not on PATH
 POLICY_VERSION=v1
 ORIGINAL_RETENTION_DAYS=30
 DERIVED_RETENTION_DAYS=7
@@ -788,6 +1050,7 @@ DERIVED_RETENTION_DAYS=7
 # Demo
 DEMO_ENABLED=false
 DEMO_DATASET_PATH=                      # optional; falls back to backend/data/sdoc-hackathon-bundle.zip
+DEMO_AI_CALL_LIMIT=9                    # live AI calls one demo session may make
 
 # Gmail (optional; all three required to connect a mailbox)
 GOOGLE_CLIENT_ID=
@@ -816,8 +1079,9 @@ SITE_URL=http://localhost:3000          # used for SEO metadata; set to the prod
 
 1. Create a Railway project from `TEE123754/DraftWise`.
 2. Railway reads the root [`railway.json`](railway.json), which selects `docker/backend.Dockerfile` and sets the health check to `/health` with an on-failure restart policy.
-3. Add the backend variables above in **Railway → Variables** (`ENVIRONMENT=production`, `WORKER_ENABLED=true`, `ALLOWED_ORIGINS=https://<your-app>.vercel.app`, …).
+3. Add the backend variables above in **Railway → Variables** (`ENVIRONMENT=production`, `ALLOWED_ORIGINS=https://<your-app>.vercel.app`, …).
 4. Under **Settings → Networking**, generate a public domain and use it as `NEXT_PUBLIC_API_URL` in Vercel.
+5. **Add the worker as a second service.** Create another service from the same repository, give it the same variables, and set its start command to `python -m app.workers.runner`. The image's default command starts only the API, and the worker is what reads documents and runs the checks: without one, `/ready` returns `503` and emails stay at *documents not read yet*. The worker exposes no HTTP port, so the `/health` health check in `railway.json` does not suit it; give that service its own config or clear the health check in its settings.
 
 The container starts `uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}` as a non-root user with Tesseract installed. Run migrations once as a deployment operation, never concurrently from every worker.
 
@@ -1021,7 +1285,7 @@ Large artefacts belong in Storage, not PostgreSQL JSONB. Every child row carries
 
 ### `/ready` returns 503 "worker is not active"
 
-The API is up but no worker heartbeat was seen in the last 60 seconds. Start the worker (`uv run python -m app.workers.runner`) or set `WORKER_ENABLED=true` so the API hosts one. After changing backend code, restart stale worker processes.
+The API is up but no worker heartbeat was seen in the last 60 seconds. Start the worker (`uv run python -m app.workers.runner`). It is a separate process from the API, and on Railway it needs its own service. After changing backend code, restart stale worker processes.
 
 ### The frontend cannot reach the API
 
@@ -1056,6 +1320,10 @@ Pass Windows-style paths (for example from `cygpath -w`) in `DATA_DIR` and `GROU
 ### Frontend build clashes with a running server
 
 `next build` shares `.next` with a running `next start`. Stop the server before building. Playwright uses its own `.next-test` directory on port 3100.
+
+### `next dev` says another server is already running
+
+Next.js allows one dev server per project folder. Use the address it prints, or stop the other one. Running two frontends side by side needs a different build directory (the Playwright suite uses `DRAFTWISE_E2E=true` for that).
 
 ### `pnpm install` fails
 
