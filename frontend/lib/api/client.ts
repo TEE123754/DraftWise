@@ -1,4 +1,5 @@
 import { getSupabase } from "@/lib/supabase";
+import { API_ROOT } from "@/lib/api/base";
 
 export class ApiError extends Error {
   constructor(
@@ -34,10 +35,12 @@ export async function api<T>(
   if (options.body) headers.set("Content-Type", "application/json");
   if (options.method && options.method !== "GET")
     headers.set("Idempotency-Key", crypto.randomUUID());
-  const result = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1${path}`,
-    { ...options, headers, credentials: "include", cache: "no-store" },
-  );
+  const result = await fetch(`${API_ROOT}${path}`, {
+    ...options,
+    headers,
+    credentials: "include",
+    cache: "no-store",
+  });
   const body = await result.json().catch(() => null);
   if (!result.ok)
     throw new ApiError(

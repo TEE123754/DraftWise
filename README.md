@@ -1027,6 +1027,8 @@ The API is up but no worker heartbeat was seen in the last 60 seconds. Start the
 
 Check `curl http://localhost:8000/health`, confirm `NEXT_PUBLIC_API_URL`, and make sure `ALLOWED_ORIGINS` on the backend includes the exact frontend origin (HTTPS in production, and the Vercel preview domain if you use it).
 
+If the demo dashboard shows "Workspace summary unavailable" with "Open the demo to start a session", the demo cookie was not sent back. On Vercel, `NEXT_PUBLIC_API_URL` must be an `https://` URL set before the build: the frontend then proxies `/api/v1/*` to the backend through its own origin. Redeploy Vercel after changing it.
+
 ### Sign-in redirects fail
 
 Add your redirect URL — for example `http://localhost:3000/dashboard` — to the permitted redirect list in Supabase Auth settings.

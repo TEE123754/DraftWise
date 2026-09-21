@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { API_ROOT } from "@/lib/api/base";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { WordMark } from "@/components/brand/wordmark";
@@ -209,10 +210,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 setBusy(true);
                 setNotice("");
                 try {
-                  const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/demo/session`,
-                    { method: "DELETE", credentials: "include" },
-                  );
+                  const response = await fetch(`${API_ROOT}/demo/session`, {
+                    method: "DELETE",
+                    credentials: "include",
+                  });
                   if (!response.ok)
                     throw new Error("Could not end the demo. Please retry.");
                   sessionStorage.removeItem("draftwise-demo-workspace");

@@ -90,7 +90,7 @@ Under **Environment Variables**, add:
 
 | Variable | Value | Notes |
 | :--- | :--- | :--- |
-| `NEXT_PUBLIC_API_URL` | `https://<your-railway-domain>.up.railway.app` | Railway backend public URL |
+| `NEXT_PUBLIC_API_URL` | `https://<your-railway-domain>.up.railway.app` | Railway backend public URL. It must be set at **build** time. `next.config.ts` uses it as the destination of a same-origin `/api/v1/*` rewrite, so the browser only talks to the Vercel domain and the demo session cookie stays first-party (Safari, Firefox strict and Incognito block third-party cookies). Redeploy Vercel after changing it. |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<your-project-ref>.supabase.co` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `<your-supabase-anon-key>` | Supabase anonymous public key |
 | `SITE_URL` | `https://<your-app>.vercel.app` | Production site URL for SEO & metadata |

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { WordMark } from "@/components/brand/wordmark";
+import { API_ROOT } from "@/lib/api/base";
 import { Button } from "@/components/ui/button";
 
 export default function DemoPage() {
@@ -13,10 +14,10 @@ export default function DemoPage() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/demo/session`,
-        { method: "POST", credentials: "include" }
-      );
+      const response = await fetch(`${API_ROOT}/demo/session`, {
+        method: "POST",
+        credentials: "include",
+      });
       const data = await response.json();
       if (!response.ok)
         throw new Error(data.error?.message || "Could not start the demo.");

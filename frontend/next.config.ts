@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
+// A hosted backend (Vercel calling Railway) is on another site, so browsers that block third-party
+// cookies (Safari, Firefox strict, Incognito) would drop the demo session cookie. Proxying
+// /api/v1 through this origin keeps the cookie first-party. Local http backends are called directly.
+const backendUrl = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
+const proxyApi = backendUrl.startsWith("https://");
+
 const config: NextConfig = {
   distDir: process.env.DRAFTWISE_E2E === "true" ? ".next-test" : process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   poweredByHeader: false,
@@ -11,6 +17,13 @@ const config: NextConfig = {
   // Environment variables made available to the browser
   env: {
     SITE_URL: process.env.SITE_URL || "http://localhost:3000",
+    NEXT_PUBLIC_API_BASE: proxyApi ? "" : backendUrl || "http://localhost:8000",
+  },
+
+  async rewrites() {
+    return proxyApi
+      ? [{ source: "/api/v1/:path*", destination: `${backendUrl}/api/v1/:path*` }]
+      : [];
   },
 
   // Image optimisation domains (OG images)
