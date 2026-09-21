@@ -14,4 +14,10 @@ USER app
 WORKDIR /workspace/backend
 ENV PATH="/workspace/backend/.venv/bin:$PATH"
 EXPOSE 8000
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# The API and the background worker (which reads documents and runs the checks) run in one
+# container so a single Railway service is a complete deployment. The worker is restarted if it
+# exits. Set RUN_WORKER=false to run the API alone and start the worker as its own service
+# (`python -m app.workers.runner`), as docker/compose.dev.yml does. Extra workers are safe: they
+# share the job queue through PostgreSQL row locks.
+ENV RUN_WORKER=true
+CMD ["sh", "-c", "if [ \"$RUN_WORKER\" = \"true\" ]; then (while true; do python -m app.workers.runner; echo 'worker exited; restarting in 5 seconds' >&2; sleep 5; done) & fi; exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

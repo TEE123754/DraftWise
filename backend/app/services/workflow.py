@@ -2,7 +2,7 @@
 
 from psycopg.types.json import Jsonb
 
-from app.repositories.jobs import enqueue
+from app.repositories.jobs import enqueue, promote
 from app.services.safety_review import assess_stored
 
 
@@ -29,6 +29,9 @@ async def start_workflow(connection, workspace, email_id, key, prefer_ai=True):
         )
     ).fetchone()
     if existing and existing["job_state"] in {"queued", "running", "retry_wait"}:
+        # Asking again for an email that is already waiting means "now": do not queue it twice,
+        # but move it to the front so the answer does not sit behind the rest of the mailbox.
+        await promote(connection, workspace, existing["job_id"])
         return {
             "state": existing["state"],
             "job_id": str(existing["job_id"]),

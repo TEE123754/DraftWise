@@ -42,10 +42,13 @@ order by e.created_at,
   e.id
 """
 
+# Jobs are created in one statement, so they would all share one timestamp and be claimed in
+# arbitrary order. `seq` spaces them a millisecond apart so the mailbox is read in inbox order
+# (email_001 first): the first emails a visitor opens are the first ones to be checked.
 CREATE_JOBS_SQL = """
-insert into public.processing_jobs(workspace_id,email_id,kind,idempotency_key,request_sha256,payload)
-select %s, x.email_id, 'extract', x.key, x.sha, x.payload
-from jsonb_to_recordset(%s) as x(email_id uuid, key text, sha text, payload jsonb)
+insert into public.processing_jobs(workspace_id,email_id,kind,idempotency_key,request_sha256,payload,created_at)
+select %s, x.email_id, 'extract', x.key, x.sha, x.payload, now() + x.seq * interval '1 millisecond'
+from jsonb_to_recordset(%s) as x(email_id uuid, key text, sha text, payload jsonb, seq int)
 on conflict(workspace_id,kind,idempotency_key) do nothing
 returning id, email_id
 """
@@ -70,7 +73,7 @@ async def queue_offline_processing(connection, workspace_id, email_id=None) -> d
     if not emails:
         return {"queued": 0, "skipped_failed": 0}
     requests = []
-    for email in emails:
+    for seq, email in enumerate(emails):
         attachment_ids = [str(value) for value in email["attachment_ids"]]
         payload = {"attachment_ids": attachment_ids, "workflow": True, "prefer_ai": False, "offline": True}
         requests.append(
@@ -79,6 +82,7 @@ async def queue_offline_processing(connection, workspace_id, email_id=None) -> d
                 "key": f"offline:{email['id']}:{digest({'attachments': attachment_ids})[:12]}",
                 "sha": digest(payload),
                 "payload": payload,
+                "seq": seq,
             }
         )
     created = await (await connection.execute(CREATE_JOBS_SQL, (workspace_id, Jsonb(requests)))).fetchall()

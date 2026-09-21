@@ -18,7 +18,25 @@ def _child(connection, data: bytes, source_id: str, settings: dict) -> None:
         connection.close()
 
 
+# Starting a parser process re-imports the PDF, Office and OCR libraries and costs about a second
+# per document, which is what bounds a worker's throughput on plain-text files. A small text file
+# has no container format to attack and is parsed in one linear pass, so it is read in-process.
+# Everything else, and any text file above this size, keeps the isolated, time-limited process.
+IN_PROCESS_TEXT_LIMIT = 64 * 1024
+
+
+def _is_small_plain_text(data: bytes) -> bool:
+    return len(data) <= IN_PROCESS_TEXT_LIMIT and not data.startswith((b"%PDF-", b"PK"))
+
+
 def parse_bounded(data: bytes, source_id: str, settings: Settings) -> ParsedDocument:
+    if _is_small_plain_text(data):
+        try:
+            return parse_document(data, source_id, settings=settings)
+        except DomainError:
+            raise
+        except Exception as exc:
+            raise DomainError("FILE_CORRUPT", "Document could not be parsed") from exc
     context = multiprocessing.get_context("spawn")
     parent, child = context.Pipe(duplex=False)
     # Do not send provider or database secrets into a document parser.

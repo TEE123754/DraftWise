@@ -4,6 +4,8 @@ services:
       context: ..
       dockerfile: docker/backend.Dockerfile
     env_file: ../backend/.env
+    environment:
+      - RUN_WORKER=false  # the worker below is its own service
     ports:
       - "8000:8000"
     restart: unless-stopped
