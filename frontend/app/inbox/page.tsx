@@ -9,6 +9,7 @@ import type { InboxCounts, InboxItem, InboxPage } from "@/lib/api/types";
 import { filtersFromUrl, listQuery, NO_FILTERS, PROCESSABLE_ACTIONS, sameFilters, urlFor, type InboxFilters } from "@/lib/inbox";
 import { Button } from "@/components/ui/button";
 import { SampleFetch } from "@/components/sample-fetch";
+import { ExportCsvButton } from "@/components/export-csv-button";
 import { useAuth } from "@/components/auth-provider";
 import { EmailPreview, type PreviewEmail } from "@/components/inbox/email-preview";
 import { EmailRow } from "@/components/inbox/email-row";
@@ -321,9 +322,12 @@ export default function Inbox() {
             Every email, what it needs next and why. Open one to see its documents and extracted values.
           </p>
         </div>
-        <Button disabled={!canAct || Boolean(busy)} onClick={() => setAdding(!adding)}>
-          {adding ? "Close form" : "Add email"}
-        </Button>
+        <div className="flex flex-wrap items-start justify-end gap-2">
+          <ExportCsvButton label="Export CSV (flagged fields)" />
+          <Button disabled={!canAct || Boolean(busy)} onClick={() => setAdding(!adding)}>
+            {adding ? "Close form" : "Add email"}
+          </Button>
+        </div>
       </header>
       <div className="mt-4">
         <ReadingProgress />

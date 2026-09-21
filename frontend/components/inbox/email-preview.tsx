@@ -9,6 +9,7 @@ import {
   StateChip,
 } from "@/components/inbox/chips";
 import { FieldTable } from "@/components/inbox/field-table";
+import { ExportCsvButton } from "@/components/export-csv-button";
 import { ReferenceChips } from "@/components/inbox/reference-chips";
 import { cn } from "@/lib/utils";
 
@@ -276,7 +277,12 @@ export function EmailPreview({
             </p>
           )}
           {detail?.field_table ? (
-            <FieldTable table={detail.field_table} />
+            <>
+              <FieldTable table={detail.field_table} />
+              <div className="mt-3">
+                <ExportCsvButton emailId={item.id} label="Export this email (CSV)" size="sm" />
+              </div>
+            </>
           ) : loading ? (
             <Pending>Loading the extracted values…</Pending>
           ) : (

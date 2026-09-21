@@ -232,6 +232,7 @@ You get an **isolated sample workspace** holding the 520 provided emails and 250
 | Colour-coded inbox alerts (red / yellow / green / grey rows, status filters with counts), search and bulk actions | ✅ Working |
 | Ask DraftWise chatbot (knows the open email or case, cites what it answers from) | ✅ Working |
 | Customisable dashboard, live reading progress | ✅ Working |
+| Export results as CSV (all flagged fields, or one email's seven fields) | ✅ Working |
 | Trash, restore and delete | ✅ Working |
 | Review with AI | ⚠️ Available, but limited to a small allowance (below) |
 | Gmail | 🧪 **Simulated.** *Simulate Gmail fetch* fetches the whole supplied 520-email sample mailbox in one click (emails already in your workspace are reused, never duplicated); it does not connect to Google. Real Gmail is future development. |
@@ -464,7 +465,7 @@ You can exercise the comparison logic without Supabase, keys or a browser:
 ```bash
 cd backend
 uv sync --frozen
-uv run pytest tests/unit -q                    # 251 tests, no database needed
+uv run pytest tests/unit -q                    # 263 tests, no database needed
 uv run shipping-verify --si path/to/instructions.txt --bl path/to/draft.txt --output report.json
 ```
 
@@ -529,9 +530,9 @@ NEXT_PUBLIC_API_URL=https://draftwise-production.up.railway.app
 
 | Check | Result |
 |---|---|
-| Backend unit tests | **251 passed** |
-| Backend PostgreSQL integration tests (isolated local database) | **77 passed** — 328 in the full backend suite, in about 80 seconds |
-| Browser tests (Playwright, including axe accessibility checks) | **55 passed** |
+| Backend unit tests | **263 passed** |
+| Backend PostgreSQL integration tests (isolated local database) | **80 passed** — 343 in the full backend suite, in about 80 seconds |
+| Browser tests (Playwright, including axe accessibility checks) | **57 passed** |
 | TypeScript type check · ruff lint | clean · clean |
 | Repository validator (spec artifacts, schema examples, SQL inventory) | pass |
 | **Organizer scorer**, 520-email sample, offline (`ai_fallback: false`) | **1.000** — 46 / 46 defects with exact fields, 20 / 20 review cases escalated, 520 emails in 4.4 seconds (re-run after the parser and queue changes below; `organizer-eval-06`) |
@@ -595,7 +596,7 @@ The use case asks for a system that starts from an inbox, decides which emails n
 | **End-to-end functionality** | Live demo: open a sample email → documents linked → seven-field comparison → correction preview → returned draft analysis. Backed by an API + worker + database journey test. |
 | **Architecture & scalability** | Typed service boundaries, durable `processing_jobs` with `SKIP LOCKED` leasing and fencing, tenant isolation with Row Level Security. See [System Architecture](#system-architecture). |
 | **Technology integration** | Next.js ↔ FastAPI ↔ Supabase (Auth, Storage, PostgreSQL) ↔ Gemini / Morpheus, plus Tesseract OCR, all connected and deployed. |
-| **Engineering quality & robustness** | 251 backend unit tests, 77 PostgreSQL integration tests, 55 Playwright browser tests with axe accessibility checks, ruff, and a CI workflow on every push (see the Project Status note on the Linux fix). See [Benchmark & Validation Results](#benchmark--validation-results). |
+| **Engineering quality & robustness** | 263 backend unit tests, 80 PostgreSQL integration tests, 57 Playwright browser tests with axe accessibility checks, ruff, and a CI workflow on every push (see the Project Status note on the Linux fix). See [Benchmark & Validation Results](#benchmark--validation-results). |
 | **Solution effectiveness & value** | The amendment cycle: regression detection, exact-scope correction previews, one-question-at-a-time next actions. See [Signature Workflows](#signature-workflows). |
 | **User experience & differentiation** | Attention-first inbox, evidence viewer, colour-coded explainable states, page-aware chatbot, keyboard-accessible tooltips, mobile layouts verified at 390 / 768 / 1440 px. |
 | **Impact & future potential** | [docs/IMPACT_AND_ROLLOUT.md](docs/IMPACT_AND_ROLLOUT.md): eight success measures with definitions, data sources and pilot targets (targets, not results), a shadow-mode then assisted-mode rollout with go / no-go gates, and risks. Plus approved equivalence memory (scoped per customer), drift monitoring against a reviewed baseline, Gmail connection and workspace-level AI budgets. |
@@ -714,6 +715,8 @@ Nothing stops at a text summary. Each stage writes its output and enqueues the n
 | **Ask DraftWise chatbot** | A floating chatbot that knows which email or case is open, answers from your workspace data with clickable citations, and uses rules before any AI. See [Ask DraftWise chatbot](#ask-draftwise-chatbot). | Every signed-in page (bottom-right) |
 | Drift monitoring | Compares two disjoint windows against a *reviewed* baseline; shows "insufficient data" instead of inventing one. | Alerts |
 | Customisable dashboard | Toggle and reorder panels (arrows or drag), saved per workspace; every count drills down to the emails behind it. | Overview |
+| **Export results (CSV)** | *Export CSV* on the Inbox downloads every flagged field of the workspace; *Export this email (CSV)* in the preview downloads all seven fields of one email. One row per email and field: SI value, BL value, decision, confidence, severity, **who handles it** (automated or human review), the next step, the explanation of why it was flagged, and the source quote on each side. UTF-8 with a byte-order mark so Excel opens it correctly; cells that begin with `=`, `+`, `-` or `@` are neutralised so a hostile email cannot run a formula. | Inbox, email preview |
+| **BL type note** | When the names match but the BL is issued *to the order of* (negotiable) while the SI names a straight consignee, or the reverse, the consignee row says so and asks for the BL type to be confirmed. It does not change the decision: the names agree, so it is not a defect and is not counted as a review item. On the 114 sample comparisons re-checked, 37 carry it, because the sample BLs routinely label the consignee line *To the Order of*. A bare `TO ORDER` against a named consignee stays a mismatch. | Case page, CSV |
 | Analytics | Organizer-scorer results, AI classifier accuracy panel, and AI usage against budget. | Analytics |
 | **Workspace and access** | | |
 | Trash & retention | 30-day restorable Trash, retention purges, and durable Storage cleanup. | Trash |
@@ -1104,9 +1107,9 @@ Rules alone did **not** generalise: they abstained on about half the held-out em
 
 | Suite | Scope | Command |
 |---|---|---|
-| Backend unit | 251 tests: verifier, parsers, grounding, classification, email state, rules, previews, revision analysis … | `uv run pytest tests/unit -q` |
-| Backend integration | 77 tests against real PostgreSQL: tenant isolation, concurrency, lease recovery, worker restart, amendment journey, storage cleanup | `node tools/postgres/run-tests.mjs` |
-| Browser | 55 Playwright tests with axe accessibility checks: inbox, dashboard, amendment regression, field review, public pages, layouts | `pnpm test:e2e` |
+| Backend unit | 263 tests: verifier, parsers, grounding, classification, email state, rules, previews, revision analysis … | `uv run pytest tests/unit -q` |
+| Backend integration | 80 tests against real PostgreSQL: tenant isolation, concurrency, lease recovery, worker restart, amendment journey, storage cleanup | `node tools/postgres/run-tests.mjs` |
+| Browser | 57 Playwright tests with axe accessibility checks: inbox, dashboard, amendment regression, field review, public pages, layouts | `pnpm test:e2e` |
 | Repository | File inventory, Markdown links, JSON syntax, schema examples, SQL inventory | `python scripts/validate_repository.py` |
 
 CI (`.github/workflows/test-application.yml`) runs the backend suite against PostgreSQL 18, ruff, repository validation, the frontend production build and the Playwright suite on every push and pull request. The backend job was red on every push until this update because of a Linux-only pytest hook error (see [Project Status](#project-status)); the suite always passed on the Windows development machine, which is why it went unnoticed.
@@ -1426,6 +1429,7 @@ Health endpoints are unauthenticated and live at the root. Business endpoints re
 | `POST` | `/api/v1/verify` | Compare an SI and a BL |
 | `GET` | `/api/v1/extractions/{extraction_id}` | Read an extraction with evidence |
 | `GET` | `/api/v1/verification/{report_id}` | Read a discrepancy report |
+| `GET` | `/api/v1/exports/discrepancies.csv` | CSV of the latest report of every email (`include_matches=true` for all seven fields; `email_id=<uuid>` for one email) |
 | `GET` | `/api/v1/jobs/{job_id}` | Job status |
 | `POST` | `/api/v1/jobs/{job_id}/retry` | Explicit retry with a new attempt |
 | `GET` | `/api/v1/workspace/processing` | Reading / comparison progress |

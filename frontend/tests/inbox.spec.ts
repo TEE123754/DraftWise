@@ -511,3 +511,47 @@ test("the dashboard's failed-processing link opens exactly those emails, and the
   await expect(row(page, "email_007")).toBeVisible();
   expect(seen.lists.at(-1)?.get("failed")).toBeNull();
 });
+
+const CSV = "email_id,field\r\nemail_010,container_count\r\n";
+
+test("the inbox exports every flagged field as a CSV, sending the same credentials as any other call", async ({ page }) => {
+  await mockInbox(page);
+  const requests: { url: string; workspace: string | null; authorization: string | null }[] = [];
+  await page.route("**/api/v1/exports/discrepancies.csv**", (route) => {
+    const headers = route.request().headers();
+    requests.push({ url: route.request().url(), workspace: headers["x-workspace-id"] ?? null, authorization: headers["authorization"] ?? null });
+    return route.fulfill({ status: 200, contentType: "text/csv; charset=utf-8", body: CSV });
+  });
+  await page.goto("/inbox");
+  await expect(row(page, "email_007")).toBeVisible();
+
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Export CSV (flagged fields)" }).click()]);
+  expect(download.suggestedFilename()).toBe("draftwise-discrepancies.csv");
+  await expect(page.getByRole("status").filter({ hasText: "Downloaded" })).toBeVisible();
+  expect(requests).toHaveLength(1);
+  expect(new URL(requests[0].url).search).toBe("");
+  expect(requests[0].workspace).toBeTruthy();
+  expect(requests[0].authorization).toMatch(/^Bearer /);
+});
+
+test("one email exports all seven of its fields, and a failed export says so instead of doing nothing", async ({ page }) => {
+  await mockInbox(page);
+  let fail = true;
+  const queries: string[] = [];
+  await page.route("**/api/v1/exports/discrepancies.csv**", (route) => {
+    queries.push(new URL(route.request().url()).search);
+    return fail
+      ? route.fulfill({ status: 404, json: { error: { code: "NOT_FOUND", message: "This email has no verification report yet" } } })
+      : route.fulfill({ status: 200, contentType: "text/csv; charset=utf-8", body: CSV });
+  });
+  await page.goto("/inbox");
+  await row(page, "email_010").click();
+  const button = page.getByTestId("email-preview").getByRole("button", { name: "Export this email (CSV)" });
+  await button.click();
+  await expect(page.getByRole("alert").filter({ hasText: "no verification report yet" })).toBeVisible();
+
+  fail = false;
+  const [download] = await Promise.all([page.waitForEvent("download"), button.click()]);
+  expect(download.suggestedFilename()).toBe("draftwise-discrepancies-email.csv");
+  expect(queries.at(-1)).toBe("?email_id=id-email_010&include_matches=true");
+});

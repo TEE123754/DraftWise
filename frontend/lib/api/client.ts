@@ -11,10 +11,7 @@ export class ApiError extends Error {
   }
 }
 
-export async function api<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+async function requestHeaders(base?: HeadersInit): Promise<Headers> {
   const supabase = getSupabase();
   const session = supabase
     ? (await supabase.auth.getSession()).data.session
@@ -27,11 +24,19 @@ export async function api<T>(
       "AUTH_REQUIRED",
       "Sign in and select a workspace to continue.",
     );
-  const headers = new Headers(options.headers);
+  const headers = new Headers(base);
   if (demo) headers.set("X-Demo-Mode", "true");
   else if (session)
     headers.set("Authorization", `Bearer ${session.access_token}`);
   headers.set("X-Workspace-Id", workspace);
+  return headers;
+}
+
+export async function api<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const headers = await requestHeaders(options.headers);
   if (options.body) headers.set("Content-Type", "application/json");
   if (options.method && options.method !== "GET")
     headers.set("Idempotency-Key", crypto.randomUUID());
@@ -50,6 +55,31 @@ export async function api<T>(
         "The request could not be completed. Please try again.",
     );
   return body as T;
+}
+
+/** Fetches a file with the session's credentials and hands it to the browser as a download. */
+export async function download(path: string, filename: string): Promise<void> {
+  const result = await fetch(`${API_ROOT}${path}`, {
+    headers: await requestHeaders(),
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!result.ok) {
+    const body = await result.json().catch(() => null);
+    throw new ApiError(
+      result.status,
+      body?.error?.code || "REQUEST_FAILED",
+      body?.error?.message || "The export could not be created. Please try again.",
+    );
+  }
+  const url = URL.createObjectURL(await result.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 export function post<T>(path: string, body: unknown): Promise<T> {

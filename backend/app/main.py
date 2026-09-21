@@ -20,6 +20,7 @@ from app.api import (
     document_actions,
     email_actions,
     emails,
+    exports,
     extract,
     extraction_review,
     gmail,
@@ -73,7 +74,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health.router)
     for module in (
         emails, email_actions, document_actions, classify, extract, extraction_review, verify, jobs, uploads,
-        cases, amendments, demo,
+        cases, amendments, demo, exports,
         dashboard, chat, alerts, gmail, quality, ai_quality, rules, processing, storage_cleanup,
     ):
         app.include_router(module.router, prefix="/api/v1")
