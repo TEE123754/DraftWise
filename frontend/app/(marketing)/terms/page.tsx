@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "DraftWise terms of service: acceptable use, service limitations, and account responsibilities.",
   alternates: {
-    canonical: `${process.env.SITE_URL || "http://localhost:3000"}/terms`,
+    canonical: "/terms",
   },
 };
 

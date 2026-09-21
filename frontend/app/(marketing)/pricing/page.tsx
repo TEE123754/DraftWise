@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "DraftWise pricing: free no-account demo with sample shipment data, and pilot access for teams.",
   alternates: {
-    canonical: `${process.env.SITE_URL || "http://localhost:3000"}/pricing`,
+    canonical: "/pricing",
   },
 };
 

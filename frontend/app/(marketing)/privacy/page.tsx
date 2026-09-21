@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "How DraftWise collects, uses and protects your data: including Gmail access, AI processing, and data retention.",
   alternates: {
-    canonical: `${process.env.SITE_URL || "http://localhost:3000"}/privacy`,
+    canonical: "/privacy",
   },
 };
 

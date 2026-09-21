@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/components/auth-provider";
 import { AppShell } from "@/components/app-shell";
+import { getSiteUrl, getSiteUrlObject } from "@/lib/site-url";
 import "./globals.css";
 import "./document-design.css";
 import "./workspace-polish.css";
 
-const siteUrl = process.env.SITE_URL || "http://localhost:3000";
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: getSiteUrlObject(),
   title: {
     template: "%s | DraftWise",
     default: "DraftWise: Every draft checked. Every change explained.",

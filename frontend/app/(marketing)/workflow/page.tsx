@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "A step-by-step explanation of the DraftWise shipping document verification workflow: intake, classification, documents, extraction, seven-field comparison and the reply.",
   alternates: {
-    canonical: `${process.env.SITE_URL || "http://localhost:3000"}/workflow`,
+    canonical: "/workflow",
   },
 };
 
