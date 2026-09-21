@@ -16,7 +16,7 @@ async def purge_trash(connection):
         scopes=[
             ("issue_events","issue_id",f"select id from public.case_issues where workspace_id=%s and case_id in ({cases})",3),
             *[(t,"case_id",cases,2) for t in ("amendment_drafts","correction_previews","evidence_dependencies","case_actions","case_issues","amendment_rounds","case_documents")],
-            ("review_actions","review_id",f"select id from public.review_queue where workspace_id=%s and email_id=%s",2),
+            ("review_actions","review_id","select id from public.review_queue where workspace_id=%s and email_id=%s",2),
             ("report_rule_applications","report_id",reports,2),
             ("discrepancies","report_id",reports,2),
             *[(t,"extraction_id",extractions,3) for t in ("anomalies","normalized_fields")],

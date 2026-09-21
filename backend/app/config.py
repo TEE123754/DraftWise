@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     # Google OAuth (required for Gmail connection feature)
     google_client_id: str = ""
     google_client_secret: SecretStr | None = None
+    # Fernet key that encrypts stored Gmail OAuth tokens. Gmail cannot be connected without it.
+    # Generate one with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    token_encryption_key: SecretStr | None = None
     # Public site URL used in emails and sitemap
     site_url: str = "http://localhost:3000"
     allowed_origins: str = "http://localhost:3000"

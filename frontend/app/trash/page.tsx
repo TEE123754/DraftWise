@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import { TrashControls } from "@/components/inbox/trash-controls";
+import { StorageCleanupPanel } from "@/components/inbox/storage-cleanup-panel";
 import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 type Row = {
@@ -74,6 +75,7 @@ export default function Trash() {
           Next
         </Button>
       </div>
+      {auth.role === "admin" && <StorageCleanupPanel />}
     </>
   );
 }

@@ -95,7 +95,7 @@ export const detail = {
   })),
 };
 
-export async function mockWorkspace(page: Page) {
+export async function mockWorkspace(page: Page, role = "reviewer") {
   const payload = Buffer.from(
     JSON.stringify({
       sub: "30000000-0000-4000-8000-000000000001",
@@ -131,7 +131,7 @@ export async function mockWorkspace(page: Page) {
       json: [
         {
           workspace_id: workspaceId,
-          role: "reviewer",
+          role,
           workspaces: { name: "Test Shipping Team" },
         },
       ],

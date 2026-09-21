@@ -125,7 +125,7 @@ export function DashboardPanels({ data }: { data: ExtraSummary }) {
     ["Unresolved emails", data.emails_unresolved, "/inbox?category=unclassified"],
     ["Document checks", data.document_checks, "/inbox?state=checked"],
     ["Cases with differences", data.mismatches, "/inbox?state=mismatch_found"],
-    ["Failed processing jobs", data.processing_failures, "/inbox?state=needs_review"],
+    ["Failed processing", data.processing_failures, "/inbox?failed=true"],
     ["Spam classifications", data.spam_count, "/inbox?state=spam"],
     ["Held for safety review", data.safety_held, "/inbox?state=held"],
     ["Active drift alerts", data.drift_alerts_active, "/alerts"],

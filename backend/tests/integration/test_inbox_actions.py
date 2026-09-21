@@ -1,25 +1,29 @@
+import hashlib
 from uuid import uuid4
-from httpx import ASGITransport,AsyncClient
+
+from httpx import ASGITransport, AsyncClient
+from inbox_support import add_document, add_email
 from psycopg.types.json import Jsonb
-from app.api.dependencies import Principal,principal
-from app.main import create_app
+
+from app.api.dependencies import Principal, principal
 from app.config import Settings
-from app.services.trash_retention import purge_trash
-from inbox_support import add_document,add_email
-from app.services.references import suggestions
+from app.main import create_app
 from app.repositories.jobs import claim
+from app.services.trash_retention import purge_trash
 from app.workers.handlers import Handlers
 from app.workers.runner import execute_job
-import hashlib
 
 
 async def test_trash_alerts_and_tenant_permissions(database,workspace_factory):
-    owner=await workspace_factory();other=await workspace_factory()
-    app=create_app(Settings(environment="test"));app.state.database=database
+    owner=await workspace_factory()
+    other=await workspace_factory()
+    app=create_app(Settings(environment="test"))
+    app.state.database=database
     context=Principal(owner["user"],owner["workspace"],"operator")
     app.dependency_overrides[principal]=lambda: context
     async with AsyncClient(transport=ASGITransport(app=app),base_url="http://test") as client:
-        eid=str(owner["email"]);reason={"reason":"Reviewed the original message"}
+        eid=str(owner["email"])
+        reason={"reason":"Reviewed the original message"}
         assert (await client.post("/api/v1/emails/trash",json={**reason,"email_ids":[eid]})).status_code==403
         context=Principal(owner["user"],owner["workspace"],"reviewer")
         assert (await client.request("DELETE",f"/api/v1/emails/{other['email']}",json=reason)).status_code==404
@@ -46,7 +50,10 @@ async def test_trash_alerts_and_tenant_permissions(database,workspace_factory):
 
 
 async def test_exact_reference_link_requires_confirmation_and_runs_offline(database,workspace_factory):
-    owner=await workspace_factory();other=await workspace_factory();files={};ids=[]
+    owner=await workspace_factory()
+    other=await workspace_factory()
+    files={}
+    ids=[]
     values="Booking ref: BK12345\nShipper: Acme\nConsignee: Buyer\nNotify Party: Buyer\nPort of Loading: Singapore\nPort of Discharge: Port Klang\nContainer Count: 2 x 40HC\nGross Weight: 12000 KG\n"
     async with database.connection() as conn:
         await conn.execute("update public.emails set body='Please compare the documents for Booking ref: BK12345' where id=%s",(owner["email"],))
@@ -55,11 +62,14 @@ async def test_exact_reference_link_requires_confirmation_and_runs_offline(datab
             x=await add_document(conn,owner["workspace"],source,role+".txt",role)
             row=await (await conn.execute("select a.* from public.attachments a join public.document_extractions x on x.attachment_id=a.id where x.id=%s",(x,))).fetchone()
             data=(("SHIPPING INSTRUCTIONS" if role=="SI" else "BILL OF LADING")+"\n"+values).encode()
-            files[row["storage_key"]]=data;ids.append(row["id"])
+            files[row["storage_key"]]=data
+            ids.append(row["id"])
             await conn.execute("update public.attachments set sha256=%s where id=%s",(hashlib.sha256(data).hexdigest(),row["id"]))
             await conn.execute("insert into public.source_blocks(id,workspace_id,attachment_id,parser_version,ordinal,text_content,locator,quality) values(%s,%s,%s,'v1',0,'Booking ref: BK12345','{}',1)",(uuid4(),owner["workspace"],row["id"]))
-    app=create_app(Settings(environment="test"));app.state.database=database
-    context=Principal(owner["user"],owner["workspace"],"reviewer");app.dependency_overrides[principal]=lambda:context
+    app=create_app(Settings(environment="test"))
+    app.state.database=database
+    context=Principal(owner["user"],owner["workspace"],"reviewer")
+    app.dependency_overrides[principal]=lambda:context
     async with AsyncClient(transport=ASGITransport(app=app),base_url="http://test") as client:
         path=f"/api/v1/emails/{owner['email']}"
         found=(await client.get(path+"/document-actions")).json()
@@ -76,8 +86,10 @@ async def test_exact_reference_link_requires_confirmation_and_runs_offline(datab
             return files[key.split("/",3)[3]]
     handlers=Handlers(database,LocalStorage(),Settings(environment="test"),None)
     for _ in range(8):
-        async with database.connection() as conn: job=await claim(conn)
-        if not job: break
+        async with database.connection() as conn:
+            job=await claim(conn)
+        if not job:
+            break
         assert job["payload"].get("prefer_ai") is not True
         await execute_job(database,handlers,uuid4(),job)
     async with database.connection() as conn:

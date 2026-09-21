@@ -16,7 +16,8 @@ router = APIRouter(tags=["demo"])
 
 class SampleFetch(StrictModel):
     email_id: str = Field(default="email_001", pattern=r"^email_[0-9]{3,6}$")
-    prefer_ai: bool = True
+    # AI runs only when the person asks for it; rules are the default.
+    prefer_ai: bool = False
 
 
 @router.post("/demo/gmail/fetch")

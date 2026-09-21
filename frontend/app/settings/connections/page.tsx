@@ -11,7 +11,6 @@ import type { MailboxConnectionsResponse, MailboxConnectionItem } from "@/lib/ap
 
 export default function ConnectionsPage() {
   const searchParams = useSearchParams();
-  const connectedEmail = searchParams.get("email");
   const isConnected = searchParams.get("connected") === "true";
   const errorMessage = searchParams.get("error");
 
@@ -19,8 +18,8 @@ export default function ConnectionsPage() {
   const [data, setData] = useState<MailboxConnectionsResponse | null>(null);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(
-    isConnected && connectedEmail
-      ? `Successfully connected ${connectedEmail} via Google OAuth!`
+    isConnected
+      ? "Gmail mailbox connected. It is listed below."
       : errorMessage
       ? `OAuth connection failed: ${errorMessage}`
       : null
@@ -80,8 +79,8 @@ export default function ConnectionsPage() {
     }
     setActionBusy(`disconnect-${connectionId}`);
     try {
-      await del(`/gmail/connections/${connectionId}`);
-      setStatusMessage("Mailbox disconnected.");
+      const result = await del<{ revoked: boolean; message: string | null }>(`/gmail/connections/${connectionId}`);
+      setStatusMessage(result.revoked ? "Mailbox disconnected and Google access revoked." : (result.message ?? "Mailbox disconnected."));
       await loadConnections();
     } catch (err: unknown) {
       setStatusMessage(err instanceof Error ? err.message : "Disconnect request failed.");

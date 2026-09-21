@@ -60,7 +60,13 @@ async def workspace_summary(connection, workspace_id):
     ).fetchone()
     failures = await (
         await connection.execute(
-            "select count(*) as count from public.processing_jobs where workspace_id=%s and state='failed' and error_code is distinct from 'EMAIL_TRASHED'",
+            # Emails whose latest job failed: the same set the inbox's `failed` filter shows, so the
+            # number and the list it links to agree. A failure that a later retry fixed is not counted.
+            """select count(*) as count from public.emails n
+            join lateral (select state from public.processing_jobs
+                          where workspace_id=n.workspace_id and email_id=n.id
+                          order by created_at desc limit 1) j on true
+            where n.workspace_id=%s and n.deleted_at is null and j.state='failed'""",
             (workspace_id,),
         )
     ).fetchone()

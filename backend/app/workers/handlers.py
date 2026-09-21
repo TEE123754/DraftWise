@@ -13,10 +13,10 @@ from app.services.bounded_ai import BoundedAI
 from app.services.classification import Classification, classify_explicit, segment_email
 from app.services.disambiguation import email_senses, field_senses
 from app.services.drift_detection import monitor
+from app.services.email_actions import active_email
 from app.services.equivalence_rules import EquivalenceRule
 from app.services.extraction import extract_labelled
 from app.services.pairing import pair_within_email
-from app.services.email_actions import active_email
 from app.services.safety_review import require_safe
 from app.services.verification import verify
 from app.services.workflow import workflow_state

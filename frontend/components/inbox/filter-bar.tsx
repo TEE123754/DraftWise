@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { InboxCounts, ReviewState } from "@/lib/api/types";
 import { CATEGORY_LABELS, STATE_LABELS, STATE_ORDER, STATE_STYLE, type InboxFilters } from "@/lib/inbox";
@@ -90,6 +91,18 @@ export function FilterBar({ filters, counts, searchText, onSearch, onChange }: P
           onChange={(event) => onSearch(event.target.value)}
           className="input min-h-9 w-full py-1 text-xs sm:w-80"
         />
+        {filters.failed && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onChange({ failed: false })}
+            tip={{ name: "Failed processing", description: "Only emails whose last processing job failed. Select to show all again" }}
+            className="rounded-full border-red-300 bg-red-100 text-red-900"
+          >
+            <X aria-hidden className="size-3.5" />
+            Failed processing only
+          </Button>
+        )}
       </div>
     </div>
   );

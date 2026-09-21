@@ -1,6 +1,8 @@
+import pytest
+
 from app.api.document_actions import document_actions
 from app.services.references import references
-import pytest
+
 
 @pytest.mark.parametrize("si,bl,missing",[(True,False,["draft bill of lading"]),(False,True,["shipping instructions"]),(False,False,["shipping instructions","draft bill of lading"])])
 def test_missing_document_reply(si,bl,missing):

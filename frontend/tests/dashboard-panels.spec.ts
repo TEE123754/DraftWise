@@ -47,6 +47,8 @@ test("the dashboard lists the emails that need a person and counts every state, 
   await expect(held).toHaveAttribute("href", "/inbox?state=held");
   await expect(held).toContainText("8");
   await expect(states.getByRole("link", { name: /Mismatch found/ })).toHaveAttribute("href", "/inbox?state=mismatch_found");
+  // Failed processing opens the emails whose job failed, not an approximating review state.
+  await expect(page.locator('a[href="/inbox?failed=true"]')).toHaveCount(1);
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
 

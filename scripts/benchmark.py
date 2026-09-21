@@ -269,6 +269,11 @@ def cmd_submit(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
+    # The scoreboard prints box and star characters; a cp1252 Windows console would crash on them
+    # before the scoreboard is saved.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="SDOC Verification & Benchmarking Tool")
     subparsers = parser.add_subparsers(dest="command", required=True)
 

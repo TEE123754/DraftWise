@@ -87,7 +87,14 @@ export const METHOD_LABELS: Record<string, string> = {
 /** Actions the inbox can run itself, locally and without AI. */
 export const PROCESSABLE_ACTIONS = new Set(["process", "compare", "classify"]);
 
-export type InboxFilters = { state: string; category: string; q: string };
+/** `failed` keeps emails whose latest processing job failed (the dashboard links here). */
+export type InboxFilters = { state: string; category: string; q: string; failed: boolean };
+
+export const NO_FILTERS: InboxFilters = { state: "all", category: "all", q: "", failed: false };
+
+export function sameFilters(a: InboxFilters, b: InboxFilters): boolean {
+  return a.state === b.state && a.category === b.category && a.q === b.q && a.failed === b.failed;
+}
 
 /** Query string for `GET /emails`. The same filters are used for every page of one list. */
 export function listQuery(filters: InboxFilters): URLSearchParams {
@@ -96,6 +103,7 @@ export function listQuery(filters: InboxFilters): URLSearchParams {
   if (filters.category === "unclassified") query.set("unresolved", "true");
   else if (filters.category !== "all") query.set("category", filters.category);
   if (filters.q) query.set("q", filters.q);
+  if (filters.failed) query.set("failed", "true");
   return query;
 }
 
@@ -109,6 +117,7 @@ export function filtersFromUrl(params: URLSearchParams): InboxFilters {
     state: (STATE_ORDER as string[]).includes(wanted) ? wanted : "all",
     category: CATEGORIES.has(category) ? category : "all",
     q: (params.get("q") ?? "").slice(0, 200),
+    failed: params.get("failed") === "true",
   };
 }
 
@@ -118,6 +127,7 @@ export function urlFor(filters: InboxFilters): string {
   if (filters.state !== "all") params.set("state", filters.state);
   if (filters.category !== "all") params.set("category", filters.category);
   if (filters.q) params.set("q", filters.q);
+  if (filters.failed) params.set("failed", "true");
   const query = params.toString();
   return query ? `/inbox?${query}` : "/inbox";
 }

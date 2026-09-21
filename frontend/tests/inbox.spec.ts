@@ -236,6 +236,7 @@ async function mockInbox(page: Page): Promise<Requests> {
         (!q.get("state") || r.state === q.get("state")) &&
         (!q.get("category") || r.category === q.get("category")) &&
         (q.get("unresolved") !== "true" || r.category === null) &&
+        (q.get("failed") !== "true" || r.job_state === "failed") &&
         (!needle || `${r.subject} ${r.sender} ${r.display_id}`.toLowerCase().includes(needle)),
     );
     const offset = Number(q.get("offset") ?? 0);
@@ -493,4 +494,20 @@ test("the preview says which references the email cites are in its own documents
 
   await row(page, "email_100").getByRole("button", { name: /email_100/ }).click();
   await expect(page.getByTestId("reference-check")).toHaveCount(0); // no documents: nothing to check against
+});
+
+test("the dashboard's failed-processing link opens exactly those emails, and the filter can be cleared", async ({ page }) => {
+  const seen = await mockInbox(page);
+  await page.goto("/inbox?failed=true");
+  // Asked of the server from the very first request, not approximated by a review state.
+  await expect.poll(() => seen.lists[0]?.get("failed")).toBe("true");
+  const chip = page.getByRole("button", { name: "Failed processing only" });
+  await expect(chip).toBeVisible();
+  await expect(page.getByText("No emails match these filters")).toBeVisible();
+
+  await chip.click();
+  await expect(chip).toHaveCount(0);
+  await expect.poll(() => page.url()).not.toContain("failed=");
+  await expect(row(page, "email_007")).toBeVisible();
+  expect(seen.lists.at(-1)?.get("failed")).toBeNull();
 });

@@ -1,7 +1,11 @@
 from uuid import uuid4
 
+from httpx import ASGITransport, AsyncClient
 from inbox_support import add_email
 
+from app.api.dependencies import Principal, principal
+from app.config import Settings
+from app.main import create_app
 from app.services.storage_cleanup import ATTEMPT_LIMIT, process_storage_cleanup
 from app.services.trash_retention import purge_trash
 
@@ -141,3 +145,44 @@ async def test_nothing_is_attempted_when_storage_is_not_configured(database, wor
     assert await process_storage_cleanup(database, FakeStorage(configured=False)) == 0
     row = (await rows(database, workspace))[key]
     assert (row["state"], row["attempts"]) == ("pending", 0)  # not burnt: it will be tried once storage exists
+
+
+def client_for(app, context, role="admin"):
+    app.dependency_overrides[principal] = lambda: Principal(context["user"], context["workspace"], role)
+    return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+
+
+async def test_an_administrator_sees_failed_deletions_and_can_retry_one(database, workspace_factory):
+    context, other = await workspace_factory(), await workspace_factory()
+    workspace = context["workspace"]
+    key = f"uploads/{workspace}/v/stuck.pdf"
+    await make_expired_email(database, context, [key])
+    async with database.connection() as connection:
+        await connection.execute(
+            "update public.storage_cleanup set state='failed',attempts=%s,last_error='ConnectionError' where workspace_id=%s",
+            (ATTEMPT_LIMIT, workspace),
+        )
+    # One app per identity: a dependency override is app-wide, so sharing an app would mix them up.
+    apps = [create_app(Settings(environment="test")) for _ in range(3)]
+    for each in apps:
+        each.state.database = database
+    app, outsider_app, reviewer_app = apps
+
+    async with client_for(reviewer_app, context, role="reviewer") as reviewer:
+        assert (await reviewer.get("/api/v1/storage-cleanup")).status_code == 403
+    async with client_for(outsider_app, other) as outsider:  # another workspace's admin sees nothing of ours
+        assert (await outsider.get("/api/v1/storage-cleanup")).json()["items"] == []
+    async with client_for(app, context) as admin:
+        listing = (await admin.get("/api/v1/storage-cleanup")).json()
+        assert listing["by_state"]["failed"] == 1
+        [item] = listing["items"]
+        assert (item["file_name"], item["state"], item["last_error"]) == ("stuck.pdf", "failed", "ConnectionError")
+        async with client_for(outsider_app, other) as outsider:
+            assert (await outsider.post(f"/api/v1/storage-cleanup/{item['id']}/retry")).status_code == 404
+        retried = await admin.post(f"/api/v1/storage-cleanup/{item['id']}/retry")
+        assert retried.status_code == 200 and retried.json()["state"] == "pending"
+        assert (await admin.post(f"/api/v1/storage-cleanup/{item['id']}/retry")).status_code == 409
+
+    healthy = FakeStorage()
+    assert await process_storage_cleanup(database, healthy) == 1  # the worker deletes it on its next pass
+    assert healthy.deleted == [key]

@@ -12,6 +12,7 @@ from fastapi.responses import RedirectResponse
 
 from app.api.dependencies import Reviewer, Viewer
 from app.domain.errors import DomainError
+from app.infrastructure.token_crypto import encryption_configured, seal, unseal
 
 router = APIRouter(tags=["gmail"])
 
@@ -21,20 +22,27 @@ DEMO_MESSAGE = (
 )
 UNCONFIGURED_MESSAGE = (
     "Google OAuth is not configured on this server. "
-    "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in backend configuration to enable live Gmail sync."
+    "Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and TOKEN_ENCRYPTION_KEY in backend configuration "
+    "to enable live Gmail sync."
 )
 
 OAUTH_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GMAIL_PROFILE_URL = "https://gmail.googleapis.com/gmail/v1/users/me/profile"
 GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly"
+OAUTH_REVOKE_URL = "https://oauth2.googleapis.com/revoke"
+
+
+def _configured(settings) -> bool:
+    """Gmail needs the OAuth client and a key to encrypt the tokens it hands back."""
+    return bool(settings.google_client_id and settings.google_client_secret) and encryption_configured(settings)
 
 
 def _signing_key(request: Request) -> bytes:
     secret = request.app.state.settings.google_client_secret
-    if secret:
-        return secret.get_secret_value().encode("utf-8")
-    return b"draftwise-oauth-state-signing-key"
+    if not secret:  # never sign with a guessable fallback key
+        raise DomainError("GMAIL_UNAVAILABLE", UNCONFIGURED_MESSAGE, status=503)
+    return secret.get_secret_value().encode("utf-8")
 
 
 def _generate_state(request: Request, workspace_id: UUID, user_id: UUID) -> str:
@@ -67,7 +75,7 @@ def _verify_state(request: Request, state_str: str) -> dict:
 async def get_connections(request: Request, ctx: Viewer):
     is_demo = request.headers.get("X-Demo-Mode") == "true"
     settings = request.app.state.settings
-    configured = bool(settings.google_client_id and settings.google_client_secret)
+    configured = _configured(settings)
 
     if is_demo:
         return {
@@ -121,7 +129,7 @@ async def get_connections(request: Request, ctx: Viewer):
 async def connect(request: Request, ctx: Reviewer):
     is_demo = request.headers.get("X-Demo-Mode") == "true"
     settings = request.app.state.settings
-    configured = bool(settings.google_client_id and settings.google_client_secret)
+    configured = _configured(settings)
 
     if is_demo:
         raise DomainError("GMAIL_UNAVAILABLE", DEMO_MESSAGE, status=503)
@@ -198,10 +206,17 @@ async def callback(request: Request, code: str | None = None, state: str | None 
                  refresh_token = case when excluded.refresh_token <> '' then excluded.refresh_token else public.mailbox_connections.refresh_token end,
                  last_error = null,
                  updated_at = now()""",
-            (workspace_id, user_id, email_address, access_token, refresh_token),
+            (
+                workspace_id,
+                user_id,
+                email_address,
+                seal(settings, access_token),
+                seal(settings, refresh_token),
+            ),
         )
 
-    return RedirectResponse(f"{site_url}/settings/connections?connected=true&email={email_address}")
+    # The address stays out of the URL (browser history, logs, referrers); the page lists the connection.
+    return RedirectResponse(f"{site_url}/settings/connections?connected=true")
 
 
 @router.post("/gmail/connections/{connection_id}/sync")
@@ -230,16 +245,54 @@ async def sync_connection(connection_id: UUID, request: Request, ctx: Reviewer):
 
 @router.delete("/gmail/connections/{connection_id}")
 async def disconnect_connection(connection_id: UUID, request: Request, ctx: Reviewer):
+    """Revoke the grant with Google, then erase both tokens. Imported emails are kept."""
     is_demo = request.headers.get("X-Demo-Mode") == "true"
     if is_demo:
         raise DomainError("GMAIL_UNAVAILABLE", DEMO_MESSAGE, status=503)
+    settings = request.app.state.settings
 
     async with request.app.state.database.connection() as connection:
-        res = await connection.execute(
-            "update public.mailbox_connections set state = 'disconnected', access_token = '', updated_at = now() where workspace_id = %s and id = %s",
-            (ctx.workspace_id, connection_id),
-        )
-        if res.rowcount == 0:
-            raise DomainError("NOT_FOUND", "Mailbox connection not found", status=404)
+        row = await (
+            await connection.execute(
+                "select access_token, refresh_token from public.mailbox_connections where workspace_id = %s and id = %s",
+                (ctx.workspace_id, connection_id),
+            )
+        ).fetchone()
+    if not row:
+        raise DomainError("NOT_FOUND", "Mailbox connection not found", status=404)
 
-    return {"status": "disconnected", "connection_id": str(connection_id)}
+    # Revoking the refresh token also ends every access token issued from it.
+    token = unseal(settings, row["refresh_token"]) or unseal(settings, row["access_token"])
+    revoked = await revoke_token(token) if token else True
+
+    async with request.app.state.database.connection() as connection:
+        await connection.execute(
+            """update public.mailbox_connections set state = 'disconnected', access_token = '', refresh_token = '',
+               last_error = %s, updated_at = now() where workspace_id = %s and id = %s""",
+            (None if revoked else "Google did not confirm the revocation", ctx.workspace_id, connection_id),
+        )
+
+    return {
+        "status": "disconnected",
+        "connection_id": str(connection_id),
+        "revoked": revoked,
+        "message": None
+        if revoked
+        else "Tokens were erased here, but Google did not confirm the revocation. "
+        "Remove DraftWise under Third-party access in your Google Account.",
+    }
+
+
+async def revoke_token(token: str) -> bool:
+    """True when Google no longer honours the token, including one that was already revoked or expired."""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            result = await client.post(OAUTH_REVOKE_URL, data={"token": token})
+    except httpx.HTTPError:
+        return False
+    if result.status_code == 200:
+        return True
+    try:
+        return result.status_code == 400 and result.json().get("error") == "invalid_token"
+    except ValueError:
+        return False

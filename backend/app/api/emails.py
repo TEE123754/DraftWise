@@ -204,7 +204,8 @@ async def get_email(email_id: UUID, request: Request, context: Viewer):
 
 
 class ProcessEmail(StrictModel):
-    prefer_ai: bool = True
+    # AI runs only when the person asks for it; rules are the default.
+    prefer_ai: bool = False
 
 
 @router.post("/emails/{email_id}/process")

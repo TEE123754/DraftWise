@@ -236,3 +236,19 @@ Not verified, and not claimed:
 - The sample-mailbox "Simulate Gmail fetch" still asks for AI; it is bounded by the demo allowance.
 - The held-out and 520-email regression gates (`eval_heldout.py --no-calls`, the organizer scorer) were not rerun: nothing in classification, extraction or comparison was changed except subject-line port extraction, which no scored result uses.
 - The API and worker already running on port 8000 were started before these changes; restart them (and apply migrations 014 and 015 to any other database) to use the new endpoints.
+
+## Follow-up: open items closed (2026-09-21, later)
+
+- **Services**: the API and worker on port 8000 were restarted on the current code (the old run had two duplicate workers), and the `next start` frontend on port 3000 was rebuilt.
+- **Migrations**: `scripts/check_migrations.py` reports what each migration file creates that a database lacks. The development database was missing **006 (Gmail connections) and 009 (conversations)**; they were applied together with the new **016**, which enables row level security and revokes client access on those three tables. Development is now complete through 016. Test and CI databases apply every file in order. Run the script against any other database before use.
+- **Demo sessions**: none were live. The session left open earlier had ended and been purged.
+- **Git**: the project is a git repository with a baseline commit, so changes can be reviewed and rolled back.
+- **AI only when asked**: `prefer_ai` now defaults to false for `POST /demo/gmail/fetch` and `POST /emails/{id}/process`, and "Simulate Gmail fetch" sends false.
+- **Dashboard**: "Failed processing" counts non-trashed emails whose latest job failed, and links to `/inbox?failed=true`, a real filter (removable chip, kept in the URL). It no longer approximates this with "Needs review".
+- **File deletion**: checked against real Supabase Storage (upload, delete, confirm gone, delete again). That found a real bug: Supabase reports a missing object as HTTP 400 with `statusCode: "404"`, which was treated as an error, so a retried delete could end as "failed". It is fixed and unit-tested with the recorded response. Administrators have a panel on `/trash` (`GET /storage-cleanup`, `POST /storage-cleanup/{id}/retry`) with counts, failed files and a retry button.
+- **Read without AI**: exercised live in a demo workspace on an email whose SI and BL were unread, through the real button, API and worker, with no AI call.
+- **Gmail tokens**: sealed with Fernet (`TOKEN_ENCRYPTION_KEY`; Gmail cannot be connected without it). Disconnect revokes the grant with Google and erases both tokens; if Google cannot be reached, the tokens are still erased and the user is told to remove access in their Google Account. The address is no longer put in the redirect URL, and the OAuth state no longer falls back to a fixed signing key. Real Gmail sync is still a stub.
+- **Lint**: `ruff check backend` passes (was 38 errors).
+- **Regression gates rerun offline**: organizer scorer 1.000 on the 520-email sample (`artifacts/benchmarks/organizer-eval-04`); held-out rules-only unchanged (classification 29/60, fields 224/224, 0 false alarms). `benchmark.py` no longer crashes on a cp1252 console before saving the scoreboard.
+
+Still open: a fresh held-out set with new wording (rules-only classification is 48% on unfamiliar mail); a live AI evaluation (needs that new set, and costs provider calls); real-device touch testing; real Gmail sync; container runs and deployed smoke tests; an independently reviewed accuracy evaluation.

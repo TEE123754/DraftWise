@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 export const metadata: Metadata = {
-  title: "Trash | DraftWise",
+  title: "Trash",
   description:
     "Review and restore emails removed from your DraftWise workspace.",
   robots: { index: false, follow: false },

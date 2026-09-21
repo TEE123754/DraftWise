@@ -1,5 +1,7 @@
 from uuid import uuid4
+
 from psycopg.types.json import Jsonb
+
 from app.domain.errors import DomainError
 
 

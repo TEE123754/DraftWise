@@ -34,7 +34,7 @@ class Storage:
             raise DomainError("STORAGE_KEY_NOT_PHYSICAL", "This key is not an uploaded object", status=400)
         async with httpx.AsyncClient(timeout=30) as client:
             result = await client.delete(self.url(key), headers=self.headers())
-        if result.status_code != 404 and not result.is_success:
+        if not result.is_success and not _object_missing(result):
             raise DomainError("STORAGE_UNAVAILABLE", "Storage did not delete the object", retryable=True, status=503)
 
     async def reserve(self, key: str) -> str:
@@ -87,3 +87,14 @@ class Storage:
                             status=413,
                         )
                 return bytes(data)
+
+
+def _object_missing(result: httpx.Response) -> bool:
+    """Supabase Storage reports a missing object as HTTP 400 with `"statusCode": "404"` in the body."""
+    if result.status_code == 404:
+        return True
+    try:
+        body = result.json()
+    except ValueError:
+        return False
+    return isinstance(body, dict) and (str(body.get("statusCode")) == "404" or body.get("code") == "NoSuchKey")

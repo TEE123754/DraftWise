@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 
+import httpx
 import pytest
 from pydantic import SecretStr
 
@@ -16,6 +17,7 @@ def settings(key="sb_secret_x", url="https://project.supabase.test"):
 
 class FakeClient:
     status = 200
+    body = None
     seen = []
 
     def __init__(self, *args, **kwargs):
@@ -29,13 +31,15 @@ class FakeClient:
 
     async def delete(self, url, headers):
         FakeClient.seen.append((url, headers))
-        return SimpleNamespace(status_code=FakeClient.status, is_success=200 <= FakeClient.status < 300)
+        if FakeClient.body is None:
+            return httpx.Response(FakeClient.status)
+        return httpx.Response(FakeClient.status, json=FakeClient.body)
 
 
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.setattr(storage_module.httpx, "AsyncClient", FakeClient)
-    FakeClient.seen = []
+    FakeClient.seen, FakeClient.status, FakeClient.body = [], 200, None
     return FakeClient
 
 
@@ -49,6 +53,20 @@ async def test_delete_calls_the_private_bucket_with_the_service_key(client):
 async def test_an_object_that_is_already_gone_counts_as_deleted_so_retries_are_safe(client):
     client.status = 404
     await Storage(settings()).delete("uploads/ws/id/gone.pdf")
+
+
+async def test_supabase_reports_a_missing_object_as_a_400_and_that_still_counts_as_deleted(client):
+    # Recorded from the real Supabase Storage API on 2026-09-21 for a key that did not exist.
+    client.status = 400
+    client.body = {"statusCode": "404", "error": "not_found", "message": "Object not found", "code": "NoSuchKey"}
+    await Storage(settings()).delete("uploads/ws/id/gone.pdf")
+
+
+async def test_any_other_400_is_still_an_error(client):
+    client.status = 400
+    client.body = {"statusCode": "400", "error": "InvalidKey", "message": "Invalid key"}
+    with pytest.raises(DomainError):
+        await Storage(settings()).delete("uploads/ws/id/a.pdf")
 
 
 async def test_a_storage_error_is_reported_as_retryable(client):

@@ -5,12 +5,12 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Query, Request, Response
 from pydantic import Field
 
-from app.api.document_actions import document_actions
-from app.repositories.emails import load_inbox
 from app.api.dependencies import IdempotencyKey, Operator, Reviewer, Viewer
+from app.api.document_actions import document_actions
 from app.domain.errors import DomainError
 from app.domain.models import StrictModel, VerificationReport
 from app.repositories.cases import audit, get_case, require_version
+from app.repositories.emails import load_inbox
 from app.repositories.jobs import enqueue
 from app.services.action_planner import next_action
 

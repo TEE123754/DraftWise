@@ -9,17 +9,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import (
-    alerts,
     ai_quality,
+    alerts,
     amendments,
     cases,
     chat,
     classify,
     dashboard,
     demo,
-    emails,
-    email_actions,
     document_actions,
+    email_actions,
+    emails,
     extract,
     extraction_review,
     gmail,
@@ -28,6 +28,7 @@ from app.api import (
     processing,
     quality,
     rules,
+    storage_cleanup,
     uploads,
     verify,
 )
@@ -73,7 +74,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     for module in (
         emails, email_actions, document_actions, classify, extract, extraction_review, verify, jobs, uploads,
         cases, amendments, demo,
-        dashboard, chat, alerts, gmail, quality, ai_quality, rules, processing,
+        dashboard, chat, alerts, gmail, quality, ai_quality, rules, processing, storage_cleanup,
     ):
         app.include_router(module.router, prefix="/api/v1")
     return app

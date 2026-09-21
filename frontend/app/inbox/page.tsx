@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, post, uploadDocument, waitForJob } from "@/lib/api/client";
 import type { InboxCounts, InboxItem, InboxPage } from "@/lib/api/types";
-import { filtersFromUrl, listQuery, PROCESSABLE_ACTIONS, urlFor, type InboxFilters } from "@/lib/inbox";
+import { filtersFromUrl, listQuery, NO_FILTERS, PROCESSABLE_ACTIONS, sameFilters, urlFor, type InboxFilters } from "@/lib/inbox";
 import { Button } from "@/components/ui/button";
 import { SampleFetch } from "@/components/sample-fetch";
 import { useAuth } from "@/components/auth-provider";
@@ -44,7 +44,7 @@ export default function Inbox() {
   const [total, setTotal] = useState(0);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [counts, setCounts] = useState<InboxCounts | null>(null);
-  const [filters, setFilters] = useState<InboxFilters>({ state: "all", category: "all", q: "" });
+  const [filters, setFilters] = useState<InboxFilters>(NO_FILTERS);
   const [searchText, setSearchText] = useState("");
   const [ready, setReady] = useState(false); // filters from the URL are applied before the first fetch
   const [loading, setLoading] = useState(true);
@@ -86,8 +86,7 @@ export default function Inbox() {
   const applied = useRef(filters);
   const applyFilters = useCallback((change: Partial<InboxFilters>) => {
     const next = { ...applied.current, ...change };
-    if (next.state === applied.current.state && next.category === applied.current.category && next.q === applied.current.q)
-      return;
+    if (sameFilters(next, applied.current)) return;
     applied.current = next;
     setFilters(next);
     history.replaceState(null, "", urlFor(next));
@@ -307,7 +306,7 @@ export default function Inbox() {
     }
   }
 
-  const filtered = filters.state !== "all" || filters.category !== "all" || filters.q !== "";
+  const filtered = !sameFilters(filters, NO_FILTERS);
   const previewItem = selected ? withDetail(selected, detail?.id === selected.id ? detail : null) : null;
 
   return (

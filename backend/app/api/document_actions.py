@@ -1,12 +1,14 @@
-from uuid import UUID,uuid4
-from fastapi import APIRouter,Request
+from uuid import UUID, uuid4
+
+from fastapi import APIRouter, Request
 from psycopg.types.json import Jsonb
-from app.api.dependencies import Operator,Viewer,IdempotencyKey
+
+from app.api.dependencies import IdempotencyKey, Operator, Viewer
 from app.api.email_actions import Reason
 from app.domain.errors import DomainError
 from app.repositories.emails import load_inbox
 from app.repositories.jobs import enqueue
-from app.services.email_actions import active_email,record_action
+from app.services.email_actions import active_email, record_action
 from app.services.references import suggestions
 from app.services.safety_review import require_safe
 
@@ -20,12 +22,18 @@ def document_actions(item):
     comparison_required=item.get("category","BL_COMPARISON")=="BL_COMPARISON"
     if not comparison_required:
         missing=[]
-    if "unreadable" in codes: request="Please resend a readable copy of the shipping documents."
-    elif "wrong_doc_type" in codes: request="Please send the correct "+" and ".join(missing)+" for this shipment."
-    elif kind=="resend": request="The attachments mentioned in your email did not arrive. Please resend the shipping instructions and draft bill of lading."
-    elif kind=="await_draft": request="Please send the draft bill of lading when available so we can review it with the shipping instructions."
-    elif missing: request="Please send the "+" and ".join(missing)+" for this shipment."
-    else: request="Please confirm the attached shipping documents are the latest revisions for this shipment."
+    if "unreadable" in codes:
+        request="Please resend a readable copy of the shipping documents."
+    elif "wrong_doc_type" in codes:
+        request="Please send the correct "+" and ".join(missing)+" for this shipment."
+    elif kind=="resend":
+        request="The attachments mentioned in your email did not arrive. Please resend the shipping instructions and draft bill of lading."
+    elif kind=="await_draft":
+        request="Please send the draft bill of lading when available so we can review it with the shipping instructions."
+    elif missing:
+        request="Please send the "+" and ".join(missing)+" for this shipment."
+    else:
+        request="Please confirm the attached shipping documents are the latest revisions for this shipment."
     return {"missing":missing,"kind":kind,"title":item["action"]["title"],"reasons":item["reasons"],
             "draft_reply":f"Hello,\n\n{request}\n\nRegarding: {item['subject']}\n\nThank you.",
             "can_request":comparison_required and bool(missing or "unreadable" in codes),"comparison_required":comparison_required,"method":"local_template"}
@@ -58,7 +66,8 @@ async def link_document(email_id:UUID,body:LinkDocument,request:Request,ctx:Oper
         attachment_id=existing["id"] if existing else uuid4()
         if not existing:
             count=await (await conn.execute("select count(*) as n from public.attachments where workspace_id=%s and email_id=%s and state<>'deleted'",(ctx.workspace_id,email_id))).fetchone()
-            if count["n"]>=20: raise DomainError("ATTACHMENT_LIMIT","Maximum 20 attachments per email",status=409)
+            if count["n"]>=20:
+                raise DomainError("ATTACHMENT_LIMIT","Maximum 20 attachments per email",status=409)
             await conn.execute("""insert into public.attachments(id,workspace_id,email_id,original_name,storage_key,mime_type,byte_size,sha256,state,metadata)
                 values(%s,%s,%s,%s,%s,%s,%s,%s,'validated',%s)""",
                 (attachment_id,ctx.workspace_id,email_id,source["original_name"],f"linked-source/{ctx.workspace_id}/{attachment_id}/{source['storage_key']}",source["mime_type"],source["byte_size"],source["sha256"],Jsonb({"linked_from":str(body.attachment_id),"reason":body.reason})))

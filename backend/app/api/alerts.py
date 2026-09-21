@@ -6,9 +6,9 @@ from psycopg.errors import UndefinedColumn, UndefinedTable
 from pydantic import BaseModel, Field
 
 from app.api.dependencies import Reviewer, Viewer
-from app.domain.errors import DomainError
 from app.api.email_actions import Reason
-from app.services.email_actions import record_action,relabel_release,trash_email
+from app.domain.errors import DomainError
+from app.services.email_actions import record_action, relabel_release, trash_email
 
 router = APIRouter(tags=["alerts"])
 
@@ -135,14 +135,19 @@ class AlertAction(Reason):
 async def act_on_alert(alert_id:uuid.UUID,body:AlertAction,request:Request,ctx:Reviewer):
     async with request.app.state.database.connection() as conn:
         alert=await (await conn.execute("select * from public.drift_alerts where workspace_id=%s and id=%s for update",(ctx.workspace_id,alert_id))).fetchone()
-        if not alert: raise DomainError("NOT_FOUND","Alert was not found",status=404)
-        if alert["lifecycle"] in {"resolved","dismissed"}: raise DomainError("ALERT_CLOSED","This alert is already closed",status=409)
+        if not alert:
+            raise DomainError("NOT_FOUND","Alert was not found",status=404)
+        if alert["lifecycle"] in {"resolved","dismissed"}:
+            raise DomainError("ALERT_CLOSED","This alert is already closed",status=409)
         if body.action in {"not_spam","confirm_spam"}:
-            if alert["alert_type"] not in {"spam","phishing"}: raise DomainError("INVALID_ACTION","Review drift samples individually",status=422)
-            if not alert["sample_email_ids"]: raise DomainError("NO_SAMPLES","This alert has no source email",status=409)
+            if alert["alert_type"] not in {"spam","phishing"}:
+                raise DomainError("INVALID_ACTION","Review drift samples individually",status=422)
+            if not alert["sample_email_ids"]:
+                raise DomainError("NO_SAMPLES","This alert has no source email",status=409)
             for email_id in sorted(uuid.UUID(x) for x in alert["sample_email_ids"]):
                 await relabel_release(conn,ctx,email_id,"SPAM" if body.action=="confirm_spam" else body.category,body.reason)
-                if body.action=="confirm_spam": await trash_email(conn,ctx,email_id,body.reason)
+                if body.action=="confirm_spam":
+                    await trash_email(conn,ctx,email_id,body.reason)
         state="investigated" if body.action=="investigate" else "resolved"
         await conn.execute("""update public.drift_alerts set lifecycle=%s,investigation_note=%s,updated_at=now(),
             resolved_reason=case when %s='resolved' then %s else resolved_reason end,
