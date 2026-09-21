@@ -94,6 +94,8 @@ async def start_demo(request: Request, response: Response):
             token, result = await seed_session(
                 connection, source, manifest,
                 offline_processing=request.app.state.settings.demo_offline_processing,
+                max_sessions=request.app.state.settings.demo_max_sessions,
+                max_per_hour=request.app.state.settings.demo_max_sessions_per_hour,
             )
     finally:
         source.close()

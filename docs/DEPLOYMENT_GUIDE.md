@@ -67,6 +67,8 @@ In Railway -> **Variables**, add the following environment variables:
 | `ALLOWED_ORIGINS` | `https://<your-app>.vercel.app` *(must be HTTPS in production)* |
 | `WORKER_ENABLED` | `true` |
 | `DEMO_ENABLED` | `true` |
+| `DEMO_MAX_SESSIONS` | `60` *(optional)* Demo sessions that may be alive at once. Each lasts 8 hours and holds its own copy of the sample data, so raise it only as far as your database storage allows. At the limit, new visitors see "Demo capacity reached". |
+| `DEMO_MAX_SESSIONS_PER_HOUR` | `60` *(optional)* Demo sessions that may be started in one hour. |
 | `FREE_ONLY` | `true` |
 
 > [!IMPORTANT]

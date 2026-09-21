@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     demo_enabled: bool = False
     demo_dataset_path: str = ""
     # Read and compare every seeded comparison email's documents in the background (rules only).
+    # Anonymous demo sessions that may exist at once (each lasts 8 hours), and how many may be
+    # started in one hour. Each session seeds its own copy of the sample data.
+    demo_max_sessions: int = Field(default=60, ge=1, le=1000)
+    demo_max_sessions_per_hour: int = Field(default=60, ge=1, le=1000)
     demo_offline_processing: bool = True
     demo_ai_enabled: bool = True
     demo_ai_call_limit: int = Field(default=9, ge=0, le=30)

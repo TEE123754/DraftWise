@@ -16,14 +16,22 @@ def token_hash(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-async def seed_session(connection, source, manifest, *, offline_processing=True):
+async def seed_session(
+    connection,
+    source,
+    manifest,
+    *,
+    offline_processing=True,
+    max_sessions=60,
+    max_per_hour=60,
+):
     # Bound anonymous provisioning across concurrent API processes.
     await connection.execute("select pg_advisory_xact_lock(84291731)")
     await purge_expired_samples(connection)
     count = await (
         await connection.execute("select count(*) as count from public.demo_sessions where purged_at is null")
     ).fetchone()
-    if count["count"] >= 20:
+    if count["count"] >= max_sessions:
         raise DomainError(
             "DEMO_CAPACITY",
             "Demo capacity reached. An administrator can provision a fresh demo environment.",
@@ -34,7 +42,7 @@ async def seed_session(connection, source, manifest, *, offline_processing=True)
             "select count(*) as count from public.demo_sessions where created_at>now()-interval '1 hour'"
         )
     ).fetchone()
-    if recent["count"] >= 20:
+    if recent["count"] >= max_per_hour:
         raise DomainError("DEMO_RATE_LIMIT", "Demo creation limit reached. Try again in an hour.", status=429)
     actor = uuid4()
     await connection.execute("insert into auth.users(id) values(%s)", (actor,))
