@@ -262,4 +262,6 @@ export type MailboxConnectionsResponse = {
   available: boolean;
   configured: boolean;
   message: string | null;
+  /** True while fetching mail from Gmail is future development: the message says so. */
+  future?: boolean;
 };

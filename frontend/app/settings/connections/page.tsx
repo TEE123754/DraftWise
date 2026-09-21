@@ -89,6 +89,38 @@ export default function ConnectionsPage() {
     }
   }
 
+  const notice = (
+          <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50/60 p-5">
+            <div className="flex items-start gap-3">
+              <ShieldCheck size={20} className="mt-0.5 text-brand-700 shrink-0" />
+              <div>
+                <h3 className="text-sm font-semibold text-slate-800">
+                  {data?.future
+                    ? "Gmail import: future development"
+                    : data?.configured
+                      ? "Demo Sandbox Environment"
+                      : "Live OAuth Setup Required"}
+                </h3>
+                <p className="mt-1 text-xs text-slate-600 leading-relaxed">
+                  {data?.message ||
+                    "Secure workspace-bound OAuth is configured to protect customer email boundaries. Connect real mailboxes in full production deployment."}
+                </p>
+                <div className="mt-3 flex items-center gap-3">
+                  <span className="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-0.5 text-[11px] font-medium text-slate-700">
+                    {data?.future ? "Coming in a future release" : "Offline Simulation Active"}
+                  </span>
+                  <Link
+                    href="/workflow"
+                    className="text-xs font-semibold text-brand-800 hover:text-brand-900 underline"
+                  >
+                    View intake workflow architecture →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+  );
+
   return (
     <div className="mx-auto max-w-4xl pb-16">
       <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -158,41 +190,9 @@ export default function ConnectionsPage() {
           <div className="mt-6 py-8 text-center text-sm text-slate-500">
             Checking mailbox configuration…
           </div>
-        ) : !data?.available ? (
-          <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50/60 p-5">
-            <div className="flex items-start gap-3">
-              <ShieldCheck size={20} className="mt-0.5 text-brand-700 shrink-0" />
-              <div>
-                <h3 className="text-sm font-semibold text-slate-800">
-                  {data?.configured ? "Demo Sandbox Environment" : "Live OAuth Setup Required"}
-                </h3>
-                <p className="mt-1 text-xs text-slate-600 leading-relaxed">
-                  {data?.message ||
-                    "Secure workspace-bound OAuth is configured to protect customer email boundaries. Connect real mailboxes in full production deployment."}
-                </p>
-                <div className="mt-3 flex items-center gap-3">
-                  <span className="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-0.5 text-[11px] font-medium text-slate-700">
-                    Offline Simulation Active
-                  </span>
-                  <Link
-                    href="/workflow"
-                    className="text-xs font-semibold text-brand-800 hover:text-brand-900 underline"
-                  >
-                    View intake workflow architecture →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : data.items.length === 0 ? (
-          <div className="mt-6 rounded-lg border border-dashed border-slate-300 p-8 text-center">
-            <Mail size={32} className="mx-auto text-slate-400" />
-            <p className="mt-2 text-sm font-semibold text-slate-700">No Gmail accounts connected yet</p>
-            <p className="mt-1 text-xs text-slate-500">
-              Click &quot;Connect New Mailbox&quot; above to authorize DraftWise with read-only permissions.
-            </p>
-          </div>
-        ) : (
+        ) : data && (data.items?.length ?? 0) > 0 ? (
+          <>
+            {!data.available && notice}
           <div className="mt-6 divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white">
             {data.items.map((conn: MailboxConnectionItem) => (
               <div key={conn.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -247,6 +247,17 @@ export default function ConnectionsPage() {
                 </div>
               </div>
             ))}
+          </div>
+          </>
+        ) : !data?.available ? (
+          notice
+        ) : (
+          <div className="mt-6 rounded-lg border border-dashed border-slate-300 p-8 text-center">
+            <Mail size={32} className="mx-auto text-slate-400" />
+            <p className="mt-2 text-sm font-semibold text-slate-700">No Gmail accounts connected yet</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Click &quot;Connect New Mailbox&quot; above to authorize DraftWise with read-only permissions.
+            </p>
           </div>
         )}
       </section>

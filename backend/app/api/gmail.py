@@ -20,6 +20,16 @@ DEMO_MESSAGE = (
     "Gmail import is not available in demo mode. "
     "Use manual email intake or the sample inbox meanwhile."
 )
+# Signing in to Google and storing the encrypted tokens work, but fetching mail is not built yet.
+# Until it is, say so plainly rather than connecting an account that then imports nothing.
+# Set this to True in the release that adds fetching.
+GMAIL_FETCH_AVAILABLE = False
+FUTURE_CODE = "GMAIL_FUTURE_DEVELOPMENT"
+FUTURE_MESSAGE = (
+    "Fetching mail from Gmail is planned for a future release and is not available yet. "
+    "For now, add emails and their documents by upload, or open the demo, which comes with 520 "
+    "sample emails."
+)
 UNCONFIGURED_MESSAGE = (
     "Google OAuth is not configured on this server. "
     "Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and TOKEN_ENCRYPTION_KEY in backend configuration "
@@ -85,7 +95,7 @@ async def get_connections(request: Request, ctx: Viewer):
             "message": DEMO_MESSAGE,
         }
 
-    if not configured:
+    if GMAIL_FETCH_AVAILABLE and not configured:
         return {
             "items": [],
             "available": False,
@@ -119,9 +129,11 @@ async def get_connections(request: Request, ctx: Viewer):
             }
             for r in rows
         ],
-        "available": True,
-        "configured": True,
-        "message": None,
+        # Connections made earlier stay listed so that they can be disconnected and revoked.
+        "available": GMAIL_FETCH_AVAILABLE,
+        "configured": configured,
+        "future": not GMAIL_FETCH_AVAILABLE,
+        "message": None if GMAIL_FETCH_AVAILABLE else FUTURE_MESSAGE,
     }
 
 
@@ -133,6 +145,9 @@ async def connect(request: Request, ctx: Reviewer):
 
     if is_demo:
         raise DomainError("GMAIL_UNAVAILABLE", DEMO_MESSAGE, status=503)
+
+    if not GMAIL_FETCH_AVAILABLE:  # do not send anyone to Google to grant access we cannot use yet
+        raise DomainError(FUTURE_CODE, FUTURE_MESSAGE, status=501)
 
     if not configured:
         raise DomainError("GMAIL_UNAVAILABLE", UNCONFIGURED_MESSAGE, status=503)
@@ -224,6 +239,9 @@ async def sync_connection(connection_id: UUID, request: Request, ctx: Reviewer):
     is_demo = request.headers.get("X-Demo-Mode") == "true"
     if is_demo:
         raise DomainError("GMAIL_UNAVAILABLE", DEMO_MESSAGE, status=503)
+
+    if not GMAIL_FETCH_AVAILABLE:  # marking a connection "syncing" would only pretend mail is coming
+        raise DomainError(FUTURE_CODE, FUTURE_MESSAGE, status=501)
 
     async with request.app.state.database.connection() as connection:
         conn = await (

@@ -9,13 +9,14 @@ from app.domain.errors import DomainError
 from app.domain.models import StrictModel
 from app.services.dataset_import import build_manifest, open_source
 from app.services.demo_sessions import seed_session, token_hash
-from app.services.sample_fetch import fetch_sample
+from app.services.sample_fetch import fetch_all_samples, fetch_sample
 
 router = APIRouter(tags=["demo"])
 
 
 class SampleFetch(StrictModel):
-    email_id: str = Field(default="email_001", pattern=r"^email_[0-9]{3,6}$")
+    # Omitted: fetch the whole sample mailbox (all 520 emails). Given: fetch just that one.
+    email_id: str | None = Field(default=None, pattern=r"^email_[0-9]{3,6}$")
     # AI runs only when the person asks for it; rules are the default.
     prefer_ai: bool = False
 
@@ -32,6 +33,8 @@ async def simulate_fetch(
     source = open_source(path)
     try:
         async with request.app.state.database.connection() as connection:
+            if body.email_id is None:
+                return await fetch_all_samples(connection, source, manifest, context.workspace_id, key)
             return await fetch_sample(
                 connection,
                 source,

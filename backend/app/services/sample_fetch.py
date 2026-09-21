@@ -8,6 +8,7 @@ from app.api.uploads import MIMES
 from app.domain.errors import DomainError
 from app.repositories.jobs import digest
 from app.services.classification import segment_email
+from app.services.offline_processing import queue_offline_processing
 from app.services.workflow import start_workflow
 
 
@@ -76,4 +77,39 @@ async def fetch_sample(connection, source, manifest, workspace, external_id, key
         "message": "Sample fetched"
         if imported
         else "Existing sample reused; no duplicate imported",
+    }
+
+
+async def fetch_all_samples(connection, source, manifest, workspace, key):
+    """Simulate fetching the whole sample mailbox, as a first Gmail sync would.
+
+    A demo session is seeded with every sample email, so normally all of them are found already and
+    nothing is duplicated; any that are missing are imported the same way a single fetch does. Reading
+    of the comparison emails that have not been read yet is queued, rules only.
+    """
+    emails = list(source.emails())
+    present = {
+        row["external_id"]
+        for row in await (
+            await connection.execute(
+                "select external_id from public.emails where workspace_id=%s and source_namespace='demo-bundle'",
+                (workspace,),
+            )
+        ).fetchall()
+    }
+    missing = [email.email_id for email in emails if email.email_id not in present]
+    for external_id in missing:
+        await fetch_sample(connection, source, manifest, workspace, external_id, f"{key}:{external_id}", False)
+    queued = await queue_offline_processing(connection, workspace)
+    reused = len(emails) - len(missing)
+    return {
+        "simulation": True,
+        "fetched": len(emails),
+        "imported": len(missing),
+        "reused": reused,
+        "queued_for_reading": queued["queued"],
+        "message": (
+            f"Fetched {len(emails)} emails from the sample mailbox: {len(missing)} new, "
+            f"{reused} already in your workspace (not duplicated)."
+        ),
     }
