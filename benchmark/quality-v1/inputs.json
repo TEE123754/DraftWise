@@ -1,0 +1,57 @@
+{
+  "version": "synthetic-development-v1",
+  "items": [
+    {
+      "id": "q01",
+      "subject": "Document review",
+      "body": "Please compare the draft BL against the SI.",
+      "si": "SHIPPING INSTRUCTIONS\nShipper: Example Exporter\nConsignee: Example Buyer\nNotify Party: Example Agent\nPort of Loading: Singapore\nPort of Discharge: Port Klang\nContainer Count: 2 x 40HC\nGross Weight (KG): 12000 KG\n",
+      "bl": "BILL OF LADING\nShipper: Example Exporter\nConsignee: Example Buyer\nNotify Party: Example Agent\nPort of Loading: Singapore\nPort of Discharge: Port Klang\nContainer Count: 2 x 40HC\nGross Weight (KG): 12000 KG\n"
+    },
+    {
+      "id": "q02",
+      "subject": "Booking instructions",
+      "body": "Please prepare shipping instructions for this shipment."
+    },
+    {
+      "id": "q03",
+      "subject": "Billing",
+      "body": "Please cancel this invoice because the amount is incorrect."
+    },
+    {
+      "id": "q04",
+      "subject": "Notice",
+      "body": "This is an automated notification. No action required."
+    },
+    {
+      "id": "q05",
+      "subject": "You have won",
+      "body": "Congratulations you have won a gift card. Claim now."
+    },
+    {
+      "id": "q06",
+      "subject": "Request BL draft",
+      "body": "Please cancel this invoice.\nOn Monday Pat wrote:\nPlease check draft BL."
+    },
+    {
+      "id": "q07",
+      "subject": "SI for booking",
+      "body": "Please submit the SI for the shipment."
+    },
+    {
+      "id": "q08",
+      "subject": "Schedule",
+      "body": "Daily berthing report. No action required."
+    },
+    {
+      "id": "q09",
+      "subject": "Please advise",
+      "body": "Can someone handle this paperwork?"
+    },
+    {
+      "id": "q10",
+      "subject": "New instructions",
+      "body": "Please prepare shipping instructions and check the draft BL."
+    }
+  ]
+}

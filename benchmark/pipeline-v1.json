@@ -1,0 +1,15 @@
+{
+  "pipeline_version": "v1",
+  "policy_version": "v1",
+  "concurrency": 4,
+  "party_similarity_threshold": 85,
+  "weights": {
+    "stage1": 0.30,
+    "stage3": 0.20,
+    "end_to_end": 0.50
+  },
+  "tolerances": {
+    "weight_unit_auto_convert": true,
+    "container_arithmetic_resolve": true
+  }
+}

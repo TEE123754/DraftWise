@@ -1,0 +1,527 @@
+{
+  "format_version": 1,
+  "delivery_status": "implementation_in_progress",
+  "application_status": "partially_implemented",
+  "artifacts": [
+    ".editorconfig",
+    ".github/workflows/validate-specification.yml",
+    ".gitignore",
+    "IMPLEMENTATION_PLAN.md",
+    "README.md",
+    "backend/.env.example",
+    "backend/README.md",
+    "database/README.md",
+    "database/amendment_workspace.sql",
+    "database/queries/claim_job.sql",
+    "database/schema.sql",
+    "docker/README.md",
+    "docs/ACCEPTANCE_CRITERIA.md",
+    "docs/AI_EXTRACTION.md",
+    "docs/API_CONTRACTS.md",
+    "docs/BACKEND_ARCHITECTURE.md",
+    "docs/BENCHMARKING.md",
+    "docs/DATA_ARCHITECTURE.md",
+    "docs/DELIVERY_CONTRACT.md",
+    "docs/DOCUMENT_PARSING.md",
+    "docs/FEATURE_CONTRACTS.md",
+    "docs/FRONTEND_ARCHITECTURE.md",
+    "docs/OPERATIONS.md",
+    "docs/PROCESSING_PIPELINE.md",
+    "docs/PRODUCT_SPECIFICATION.md",
+    "docs/REFERENCES.md",
+    "docs/REPOSITORY_STRUCTURE.md",
+    "docs/SYSTEM_ARCHITECTURE.md",
+    "docs/UX_SPECIFICATION.md",
+    "docs/VERIFICATION_ENGINE.md",
+    "frontend/.env.example",
+    "frontend/README.md",
+    "prompts/classify.v1.txt",
+    "prompts/equivalence.v1.txt",
+    "prompts/extract.v1.txt",
+    "repository.manifest.json",
+    "scripts/validate_repository.py",
+    "shared/examples/case.json",
+    "shared/examples/correction-preview.json",
+    "shared/examples/revision-summary.json",
+    "shared/examples/submission.json",
+    "shared/examples/verification.json",
+    "shared/fixtures/amendment-scenarios.json",
+    "shared/schemas/case.schema.json",
+    "shared/schemas/correction-preview.schema.json",
+    "shared/schemas/extraction.schema.json",
+    "shared/schemas/revision-summary.schema.json",
+    "shared/schemas/submission.schema.json",
+    "shared/schemas/verification.schema.json",
+    "docs/LOCAL_SETUP.md",
+    "docs/IMPLEMENTATION_STATUS.md",
+    "docs/DRAFTWISE_EXPANSION_PLAN.md",
+    "docs/USE_CASE_TRACEABILITY.md",
+    "docs/BRAND_AND_SITE_PLAN.md",
+    "docs/LOCAL_PIPELINE.md"
+  ],
+  "planned_modules": [
+    {
+      "path": "backend/app/main.py",
+      "responsibility": "Application factory, lifespan and typed route registration",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/config.py",
+      "responsibility": "Validated configuration and secrets",
+      "status": "implemented"
+    },
+    {
+      "path": "backend/app/api/verify.py",
+      "responsibility": "Seven-field verification endpoint",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/api/cases.py",
+      "responsibility": "Case attention queue, source selection and reads",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/api/amendments.py",
+      "responsibility": "Draft intake, previews and correction requests",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/api/rules.py",
+      "responsibility": "Equivalence rule proposal, evaluation and approval",
+      "status": "planned"
+    },
+    {
+      "path": "backend/app/api/review.py",
+      "responsibility": "Evidence-supported review decisions",
+      "status": "planned"
+    },
+    {
+      "path": "backend/app/api/classify.py",
+      "responsibility": "Email classification endpoint",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/api/extract.py",
+      "responsibility": "Document extraction endpoint",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/api/uploads.py",
+      "responsibility": "Scoped upload reservations and finalization",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/api/benchmarks.py",
+      "responsibility": "Authorized benchmark runs/results",
+      "status": "planned"
+    },
+    {
+      "path": "backend/app/api/jobs.py",
+      "responsibility": "Durable job status/retry/events",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/api/health.py",
+      "responsibility": "Safe health and readiness",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/api/dependencies.py",
+      "responsibility": "Verified JWT/workspace/role context",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/classification.py",
+      "responsibility": "Current-intent classification",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/pairing.py",
+      "responsibility": "Supported SI/BL role and reference resolution",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/extraction.py",
+      "responsibility": "Schema-constrained candidate extraction and grounding",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/normalization.py",
+      "responsibility": "Versioned field normalization",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/verification.py",
+      "responsibility": "Deterministic seven-field verification",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/cases.py",
+      "responsibility": "Pinned sources, case versions and projections",
+      "status": "planned"
+    },
+    {
+      "path": "backend/app/services/amendments.py",
+      "responsibility": "Draft and round orchestration",
+      "status": "planned"
+    },
+    {
+      "path": "backend/app/services/revision_analysis.py",
+      "responsibility": "Fixed/new/regressed/unresolved classification",
+      "status": "implemented"
+    },
+    {
+      "path": "backend/app/services/correction_previews.py",
+      "responsibility": "Pure proposed change evaluation",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/amendment_drafts.py",
+      "responsibility": "Copyable request artifacts and sharing assertions",
+      "status": "implemented"
+    },
+    {
+      "path": "backend/app/services/action_planner.py",
+      "responsibility": "Dependency-based next action",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/evidence_dependencies.py",
+      "responsibility": "Same-source dependency graph",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/review.py",
+      "responsibility": "Immutable evidence-supported corrections",
+      "status": "planned"
+    },
+    {
+      "path": "backend/app/services/equivalence_rules.py",
+      "responsibility": "Scoped reviewed equivalence rules",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/rule_impact.py",
+      "responsibility": "Historical rule previews and rechecks",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/services/readiness.py",
+      "responsibility": "Server-authoritative case state",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/repositories/cases.py",
+      "responsibility": "Workspace-scoped version-locked transactions",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/repositories/jobs.py",
+      "responsibility": "Atomic claim, lease and commit fencing",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/parsers/registry.py",
+      "responsibility": "Signature-based bounded parser dispatch",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/parsers/pdf.py",
+      "responsibility": "Digital PDF layout and evidence",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/parsers/docx.py",
+      "responsibility": "Ordered Word blocks/tables",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/parsers/xlsx.py",
+      "responsibility": "Bounded sheet and cell evidence",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/parsers/ocr.py",
+      "responsibility": "Bounded OCR recovery",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/ai/gemini.py",
+      "responsibility": "Strict structured output provider adapter",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/workers/runner.py",
+      "responsibility": "Supervised durable worker",
+      "status": "partial"
+    },
+    {
+      "path": "backend/app/benchmark/export.py",
+      "responsibility": "Unchanged organizer submission contract",
+      "status": "implemented"
+    },
+    {
+      "path": "backend/tests/unit/test_revision_analysis.py",
+      "responsibility": "Fix and regression invariants",
+      "status": "implemented"
+    },
+    {
+      "path": "backend/tests/unit/test_correction_previews.py",
+      "responsibility": "Preview purity and residual blockers",
+      "status": "implemented"
+    },
+    {
+      "path": "backend/tests/integration/test_tenant_isolation.py",
+      "responsibility": "Cross-workspace read/write denial",
+      "status": "partial"
+    },
+    {
+      "path": "backend/tests/integration/test_review_concurrency.py",
+      "responsibility": "Optimistic locking",
+      "status": "partial"
+    },
+    {
+      "path": "backend/tests/integration/test_worker_recovery.py",
+      "responsibility": "Crash/lease/commit recovery",
+      "status": "partial"
+    },
+    {
+      "path": "frontend/app/layout.tsx",
+      "responsibility": "Accessible shell and session boundary",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/app/dashboard/page.tsx",
+      "responsibility": "Attention queue",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/app/cases/[caseId]/page.tsx",
+      "responsibility": "Unified case workflow",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/app/inbox/page.tsx",
+      "responsibility": "Classified input inbox",
+      "status": "partial"
+    },
+    {
+      "path": "frontend/app/inbox/[emailId]/page.tsx",
+      "responsibility": "Original message and associated case",
+      "status": "partial"
+    },
+    {
+      "path": "frontend/app/completed/page.tsx",
+      "responsibility": "Scoped completed checks",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/app/settings/rules/page.tsx",
+      "responsibility": "Supervisor equivalence approval",
+      "status": "planned"
+    },
+    {
+      "path": "frontend/app/quality/benchmarks/page.tsx",
+      "responsibility": "Admin benchmark analytics",
+      "status": "planned"
+    },
+    {
+      "path": "frontend/components/cases/evidence-viewer.tsx",
+      "responsibility": "Side-by-side exact source regions",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/components/cases/correction-preview.tsx",
+      "responsibility": "Version-bound proposed change UI",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/components/cases/next-action-card.tsx",
+      "responsibility": "One useful next decision",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/components/cases/returned-draft-summary.tsx",
+      "responsibility": "Fixed and regressed changes",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/components/cases/amendment-timeline.tsx",
+      "responsibility": "Immutable round history",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/lib/api/client.ts",
+      "responsibility": "Typed authorized requests and safe errors",
+      "status": "partial"
+    },
+    {
+      "path": "frontend/tests/amendment-regression.spec.ts",
+      "responsibility": "Returned draft browser flow",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/tests/accessibility.spec.ts",
+      "responsibility": "Keyboard and accessibility workflow",
+      "status": "implemented"
+    },
+    {
+      "path": "docker/backend.Dockerfile",
+      "responsibility": "Tested backend/OCR image",
+      "status": "partial"
+    },
+    {
+      "path": "docker/compose.dev.yml",
+      "responsibility": "Local application stack",
+      "status": "partial"
+    },
+    {
+      "path": "docker/railway.json",
+      "responsibility": "Deployment configuration with platform PORT",
+      "status": "partial"
+    },
+    {
+      "path": "backend/pyproject.toml",
+      "responsibility": "Pinned Python project dependencies",
+      "status": "implemented"
+    },
+    {
+      "path": "backend/uv.lock",
+      "responsibility": "Generated tested dependency lock",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/package.json",
+      "responsibility": "Next.js scripts and dependencies",
+      "status": "implemented"
+    },
+    {
+      "path": "frontend/pnpm-lock.yaml",
+      "responsibility": "Generated tested dependency lock",
+      "status": "implemented"
+    }
+  ],
+  "implementation_artifacts": [
+    ".dockerignore",
+    ".github/workflows/test-application.yml",
+    "backend/app/__init__.py",
+    "backend/app/ai/__init__.py",
+    "backend/app/ai/grounding.py",
+    "backend/app/ai/morpheus.py",
+    "backend/app/ai/provider.py",
+    "backend/app/ai/structured.py",
+    "backend/app/api/__init__.py",
+    "backend/app/api/alerts.py",
+    "backend/app/api/chat.py",
+    "backend/app/api/dashboard.py",
+    "backend/app/api/demo.py",
+    "backend/app/api/emails.py",
+    "backend/app/api/errors.py",
+    "backend/app/api/gmail.py",
+    "backend/app/benchmark/__init__.py",
+    "backend/app/cli.py",
+    "backend/app/domain/__init__.py",
+    "backend/app/domain/errors.py",
+    "backend/app/domain/models.py",
+    "backend/app/infrastructure/__init__.py",
+    "backend/app/infrastructure/auth.py",
+    "backend/app/infrastructure/database.py",
+    "backend/app/infrastructure/parsing.py",
+    "backend/app/infrastructure/storage.py",
+    "backend/app/parsers/__init__.py",
+    "backend/app/parsers/text.py",
+    "backend/app/repositories/__init__.py",
+    "backend/app/server.py",
+    "backend/app/services/__init__.py",
+    "backend/app/services/dataset_import.py",
+    "backend/app/services/demo_sessions.py",
+    "backend/app/services/drift_detection.py",
+    "backend/app/services/email_extraction.py",
+    "backend/app/services/email_safety.py",
+    "backend/app/services/pipeline.py",
+    "backend/app/workers/__init__.py",
+    "backend/app/workers/handlers.py",
+    "backend/tests/conftest.py",
+    "backend/tests/integration/conftest.py",
+    "backend/tests/integration/test_amendment_workflow.py",
+    "backend/tests/integration/test_api_boundary.py",
+    "backend/tests/integration/test_demo_isolation.py",
+    "backend/tests/unit/test_classification.py",
+    "backend/tests/unit/test_contracts.py",
+    "backend/tests/unit/test_dataset_import.py",
+    "backend/tests/unit/test_email_extraction.py",
+    "backend/tests/unit/test_equivalence_rules.py",
+    "backend/tests/unit/test_grounding.py",
+    "backend/tests/unit/test_label_alignment.py",
+    "backend/tests/unit/test_morpheus.py",
+    "backend/tests/unit/test_parsers.py",
+    "backend/tests/unit/test_pipeline.py",
+    "backend/tests/unit/test_readiness.py",
+    "backend/tests/unit/test_verification.py",
+    "database/migrations/002_worker_heartbeats.sql",
+    "database/migrations/003_first_user_workspace.sql",
+    "database/migrations/004_demo_sessions.sql",
+    "database/migrations/006_mailbox_connections.sql",
+    "database/migrations/008_safety_and_drift.sql",
+    "database/migrations/009_conversations.sql",
+    "frontend/AGENTS.md",
+    "frontend/CLAUDE.md",
+    "frontend/app/(marketing)/layout.tsx",
+    "frontend/app/(marketing)/page.tsx",
+    "frontend/app/(marketing)/pricing/page.tsx",
+    "frontend/app/(marketing)/privacy/page.tsx",
+    "frontend/app/(marketing)/terms/page.tsx",
+    "frontend/app/(marketing)/workflow/page.tsx",
+    "frontend/app/alerts/page.tsx",
+    "frontend/app/cases/page.tsx",
+    "frontend/app/demo/layout.tsx",
+    "frontend/app/demo/page.tsx",
+    "frontend/app/globals.css",
+    "frontend/app/not-found.tsx",
+    "frontend/app/review/page.tsx",
+    "frontend/app/robots.ts",
+    "frontend/app/settings/connections/page.tsx",
+    "frontend/app/sign-in/page.tsx",
+    "frontend/app/sign-in/sign-in-form.tsx",
+    "frontend/app/sitemap.ts",
+    "frontend/components.json",
+    "frontend/components/app-shell.tsx",
+    "frontend/components/auth-provider.tsx",
+    "frontend/components/brand/wordmark.tsx",
+    "frontend/components/cases/case-queue.tsx",
+    "frontend/components/cases/case-workspace.tsx",
+    "frontend/components/cases/status-badge.tsx",
+    "frontend/components/email-detail.tsx",
+    "frontend/components/navigation/breadcrumbs.tsx",
+    "frontend/components/ui/button.tsx",
+    "frontend/lib/api/types.ts",
+    "frontend/lib/supabase.ts",
+    "frontend/lib/utils.ts",
+    "frontend/next-env.d.ts",
+    "frontend/next.config.ts",
+    "frontend/playwright.config.ts",
+    "frontend/postcss.config.mjs",
+    "frontend/public/apple-icon.png",
+    "frontend/public/brand/chatbot.png",
+    "frontend/public/brand/logo-horizontal.png",
+    "frontend/public/brand/logo.png",
+    "frontend/public/favicon.ico",
+    "frontend/public/icon.png",
+    "frontend/public/images/shipping-hero.webp",
+    "frontend/public/llms.txt",
+    "frontend/public/opengraph-image.png",
+    "frontend/tests/demo-journey.spec.ts",
+    "frontend/tests/fixtures.ts",
+    "frontend/tests/live-demo.cjs",
+    "frontend/tests/live-reliability.cjs",
+    "frontend/tests/reliability.spec.ts",
+    "frontend/tsconfig.json",
+    "scripts/benchmark.py",
+    "scripts/build_demo_seed.py",
+    "scripts/checkpoint_implementation.py",
+    "scripts/smoke_demo.py",
+    "tools/postgres/package-lock.json",
+    "tools/postgres/package.json",
+    "tools/postgres/run-tests.mjs"
+  ]
+}

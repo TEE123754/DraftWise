@@ -1,0 +1,52 @@
+{
+  "case_id": "00000001-0000-4000-8000-000000000001",
+  "baseline_version": 1,
+  "si_extraction_id": "00000004-0000-4000-8000-000000000001",
+  "previous_bl_id": "00000005-0000-4000-8000-000000000001",
+  "new_bl_id": "00000006-0000-4000-8000-000000000001",
+  "policy_version": "v1",
+  "fields": [
+    {
+      "field": "shipper",
+      "change": "unchanged_match",
+      "previous_decision": "match",
+      "current_decision": "match"
+    },
+    {
+      "field": "consignee",
+      "change": "fixed",
+      "previous_decision": "mismatch",
+      "current_decision": "match"
+    },
+    {
+      "field": "notify_party",
+      "change": "unchanged_match",
+      "previous_decision": "match",
+      "current_decision": "match"
+    },
+    {
+      "field": "port_of_loading",
+      "change": "unchanged_match",
+      "previous_decision": "match",
+      "current_decision": "match"
+    },
+    {
+      "field": "port_of_discharge",
+      "change": "unchanged_match",
+      "previous_decision": "match",
+      "current_decision": "match"
+    },
+    {
+      "field": "container_count",
+      "change": "unchanged_match",
+      "previous_decision": "match",
+      "current_decision": "match"
+    },
+    {
+      "field": "gross_weight_kg",
+      "change": "regressed",
+      "previous_decision": "match",
+      "current_decision": "mismatch"
+    }
+  ]
+}

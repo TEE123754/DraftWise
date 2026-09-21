@@ -1,0 +1,8 @@
+Assess whether two party strings denote the same explicitly documented identity.
+Return JSON: {"relation":"equivalent|different|uncertain",
+"evidence_ids":[...],"reason_code":"..."}.
+Use only the supplied evidence and approved alias candidates.
+Different named entities, identity qualifiers, or country conflicts cannot be
+erased because strings look similar. No external research or company guessing.
+This is an advisory result; uncertain evidence requires human review.
+INPUT_JSON: {{field_pair_with_evidence}}

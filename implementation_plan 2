@@ -1,0 +1,465 @@
+# DraftWise — Full Feature Build Plan
+
+**Slogan:** Every draft checked. Every change explained.
+
+This plan covers all 12 requested areas (demo, Gmail, dashboard, chatbot, drift alerts, phishing, landing page, UI/UX, SEO/technical, classification, PDF requirements, and final fixes). The codebase is a Next.js 16 / FastAPI monorepo with Supabase auth and PostgreSQL.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Gmail OAuth** (P3) requires a Google Cloud project with the `gmail.readonly` scope and an OAuth client ID/secret. These credentials are **not** in the repo. The plan will build the full UI/backend plumbing; it will work end-to-end only once you supply `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` to the backend `.env`.
+
+> [!IMPORTANT]
+> **Custom domain** (item 9) — we will configure `next.config.ts` with a `SITE_URL` env var and generate all canonical/og tags from it. The DNS step is out-of-scope (requires your registrar access). We will set `SITE_URL=http://localhost:3000` for dev.
+
+> [!WARNING]
+> **AI provider** — current `.env` uses Gemini or Morpheus. The chatbot and classification improvements use the same provider via the existing adapter. No new API key is needed; classification will improve via better prompts + WSD logic rather than a trained model (which would require an annotation dataset not yet available).
+
+> [!NOTE]
+> **Image generation** — the user said "ignore the image gen if you can't do that, just make a container with image description." We will create styled placeholder containers with accessible descriptions for all image assets. Logo will be an SVG.
+
+---
+
+## Open Questions
+
+None blocking execution — all ambiguous points resolved by reading the brief and existing code.
+
+---
+
+## Proposed Changes
+
+### Route Group Restructure
+
+The current flat route structure (`/dashboard`, `/inbox`, etc.) will be reorganised into Next.js route groups so public marketing pages share a different layout from the authenticated/demo workspace.
+
+```
+frontend/app/
+  (marketing)/          ← new public layout (no sidebar)
+    page.tsx            ← landing / product home
+    workflow/page.tsx
+    pricing/page.tsx
+    privacy/page.tsx
+    terms/page.tsx
+    layout.tsx          ← public nav bar only
+  (workspace)/          ← new workspace layout (existing sidebar)
+    dashboard/page.tsx  ← enhanced with widgets
+    inbox/page.tsx      ← + Gmail fetch button
+    cases/[caseId]/page.tsx
+    completed/page.tsx
+    review/page.tsx     ← NEW human review queue
+    alerts/page.tsx     ← NEW drift / phishing alerts
+    settings/
+      connections/page.tsx  ← NEW Gmail connection
+      privacy/page.tsx
+    layout.tsx          ← existing AppShell moved here
+  demo/page.tsx         ← unchanged entry, noindex
+  sign-in/page.tsx      ← NEW unified sign-in page
+  auth/callback/page.tsx
+  not-found.tsx         ← NEW custom 404
+  sitemap.ts
+  robots.ts
+  layout.tsx            ← root (fonts, canonical, JSON-LD)
+  icon.svg              ← NEW DraftWise logo mark
+  opengraph-image.png   ← NEW OG image
+```
+
+---
+
+### Component/Design System
+
+#### [MODIFY] [`globals.css`](file:///C:/Users/Edison%20Tee/Downloads/%5B!%5D%20Problem%20Statement/frontend/app/globals.css)
+- Import **Source Sans 3** from Google Fonts (as the brand brief specifies, NOT Inter everywhere)
+- Define full design token set: `--color-ink`, `--color-teal`, `--color-surface`, spacing, radius, shadow
+- Add utility classes: `.eyebrow`, `.card`, `.input`, `.badge-*`, `.prose`
+- Remove Arial fallback
+
+#### [NEW] `frontend/components/brand/wordmark.tsx`
+- SVG logo mark: two aligned document edges forming a D/W shape with a comparison tick; teal accent
+- `<WordMark size="sm|md|lg" />` for reuse in nav, landing, demo
+
+#### [MODIFY] [`app-shell.tsx`](file:///C:/Users/Edison%20Tee/Downloads/%5B!%5D%20Problem%20Statement/frontend/components/app-shell.tsx)
+- Replace Arial/default font with Source Sans 3
+- Add navigation items: Dashboard, Inbox, Cases, Review, Alerts, Settings
+- Add "Ask DraftWise" assistant panel trigger button in sidebar footer
+- Demo mode: show "Sample workspace" banner instead of account section
+- Mobile: collapsible sidebar
+
+#### [NEW] `frontend/components/navigation/breadcrumbs.tsx`
+- `<Breadcrumbs items={[{label, href}]} />` with `aria-label`, `aria-current`
+
+---
+
+### 1 — Demo Version (no sign-in)
+
+The backend already has `POST /api/v1/demo/session` and session seeding. The frontend `/demo` page already starts it. Work needed:
+
+#### [MODIFY] [`frontend/app/demo/page.tsx`](file:///C:/Users/Edison%20Tee/Downloads/%5B!%5D%20Problem%20Statement/frontend/app/demo/page.tsx)
+- Redesigned welcome screen with brand header, slogan, workflow summary, guided steps
+- Add "What you can explore" feature checklist (all features unlocked)
+- Keep "Start the demo" CTA; add "Learn more" link to landing
+- Remove session expiry disclaimer from body (move to footnote)
+
+#### [MODIFY] [`frontend/components/auth-provider.tsx`](file:///C:/Users/Edison%20Tee/Downloads/%5B!%5D%20Problem%20Statement/frontend/components/auth-provider.tsx)
+- Demo sessions already handled; ensure all new features (chatbot, alerts, review) are accessible in demo mode
+
+#### Backend (already implemented):
+- `backend/app/api/demo.py` — session lifecycle
+- `backend/app/services/demo_sessions.py` — seeding
+
+---
+
+### 2 — Gmail Email Fetching
+
+#### [NEW] `backend/app/api/gmail.py`
+- `GET /api/v1/gmail/connections` — list connected mailboxes
+- `POST /api/v1/gmail/connect` — initiate OAuth (redirect to Google)
+- `GET /api/v1/gmail/callback` — exchange code, store encrypted token
+- `POST /api/v1/gmail/sync` — trigger manual sync job
+- `DELETE /api/v1/gmail/connections/{id}` — revoke and disconnect
+
+#### [NEW] `backend/app/integrations/gmail.py`
+- OAuth authorization-code + PKCE flow using `google-auth`/`google-api-python-client`
+- Token encryption at rest (Fernet, rotation key from env)
+- MIME decode, base64url body/attachment extraction
+
+#### [NEW] `backend/app/services/gmail_sync.py`
+- Paginated listing with history cursor
+- Deduplication via `(workspace_id, connection_id, gmail_message_id)` unique key
+- Attachment size + format guard (same limits as manual upload)
+- Job-based async processing integrated with existing worker
+
+#### [NEW] `database/migrations/006_mailbox_connections.sql`
+- `mailbox_connections` table: workspace, owner, encrypted tokens, history cursor, state
+- `gmail_messages` table: deduplication, imported email FK
+
+#### [NEW] `frontend/app/(workspace)/settings/connections/page.tsx`
+- Show connected Gmail accounts with status, last sync, message count
+- "Connect Gmail" button → OAuth consent UI with explicit scope disclosure
+- "Sync now" button, disconnect with data-retention warning
+
+#### [MODIFY] `frontend/app/(workspace)/inbox/page.tsx`
+- Add "Fetch from Gmail" button that triggers sync and refreshes list
+- Simulated Gmail mode in demo: shows sample fetch with labelled disclaimer
+
+---
+
+### 3 — Dashboard
+
+#### [NEW] `backend/app/api/dashboard.py`
+- `GET /api/v1/dashboard` — summary counts: total emails, classified, cases open/checked/failed, review queue size, spam/phishing count, drift alerts active
+- `GET /api/v1/dashboard/recent` — last 10 cases with status
+
+#### [NEW] `backend/app/services/dashboard.py`
+- SQL aggregation queries respecting workspace RLS
+
+#### [NEW] `database/migrations/007_dashboard_preferences.sql`
+- `dashboard_preferences` table: workspace + user, widget order/visibility JSON, date range
+
+#### [NEW] `frontend/app/(workspace)/dashboard/page.tsx`
+- Full replacement of the simple `<CaseQueue />` stub
+- Stat cards: Emails Processed, Under Review, Verified, Awaiting Draft, Spam/Phishing, Drift Alerts
+- Action queue: prioritised list of cases needing decision (top 5)
+- Processing progress bar for active jobs
+- Customisable: hide/show widgets, persist preference to backend
+- Last-refresh timestamp, timezone display
+
+#### [NEW] `frontend/components/dashboard/`
+- `stat-card.tsx` — metric card with label, value, trend direction, link to filtered view
+- `action-queue.tsx` — prioritised case list
+- `progress-tracker.tsx` — jobs in progress
+- `widget-layout.tsx` — drag-and-drop-less ordered widget grid (CSS Grid, keyboard reorder)
+
+---
+
+### 4 — Chatbot (Ask DraftWise)
+
+#### [NEW] `backend/app/api/chat.py`
+- `POST /api/v1/chat` — send a message, receive cited answer
+- `GET /api/v1/chat/history` — paginated conversation history
+- `DELETE /api/v1/chat/history` — clear conversation
+
+#### [NEW] `backend/app/services/chat.py`
+- Allowlisted read-only tools: `workspace_summary`, `case_status`, `issue_details`, `job_status`, `feature_help`
+- Each tool queries the database (workspace-scoped); model explains the result
+- Grounded citations: case IDs, field names, timestamps — no invented facts
+- Refuses: arbitrary SQL, cross-workspace, approval actions
+
+#### [NEW] `backend/app/services/chat_tools.py`
+- Tool implementations with DB queries
+- Response schema: `{answer, citations: [{caseId, field, timestamp}], tool_calls_used}`
+
+#### [NEW] `database/migrations/009_conversations.sql`
+- `conversations` table: workspace, session, messages JSONB, token count, created/updated
+
+#### [NEW] `frontend/components/assistant/assistant-panel.tsx`
+- Slide-in side panel (not a full page) triggered from sidebar "Ask DraftWise" button
+- Message list with cited links (opens case/filter in same tab)
+- Input with suggested prompts: "What needs my attention?", "Which drafts are waiting?", "Why did case X fail?"
+- Loading/error/retry states; admit unavailable evidence
+- Demo mode uses demo workspace budget
+
+---
+
+### 5 — Concept Drift Alerts
+
+#### [NEW] `backend/app/services/drift_detection.py`
+- Reference distribution from reviewed dev data: intent mix, confidence distribution, correction rate
+- Sliding window comparison (min 100 emails, min 20 reviewed outcomes)
+- Metrics: KL divergence of category distribution, mean confidence shift, correction rate trend
+- `DriftSignal`: level (none/watch/alert), window, baseline_version, changed_features, sample_ids
+- Alert lifecycle: open → acknowledged → investigated → resolved/dismissed
+
+#### [NEW] `backend/app/api/alerts.py`
+- `GET /api/v1/alerts` — list active drift/phishing alerts
+- `POST /api/v1/alerts/{id}/acknowledge` — assign to reviewer
+- `POST /api/v1/alerts/{id}/resolve` — close with reason
+- `GET /api/v1/alerts/{id}/evidence` — sample emails for that alert
+
+#### [NEW] `database/migrations/008_safety_and_drift.sql`
+- `drift_alerts` table: workspace, alert_type, severity, window_start/end, baseline_version, evidence JSONB, lifecycle
+- `email_safety` table: email_id, risk_state, signals JSONB, reviewed_by, released_at
+
+#### [NEW] `frontend/app/(workspace)/alerts/page.tsx`
+- Alert list: severity badge, affected window, changed features, sample emails
+- Alert detail: evidence panel, acknowledge/resolve workflow
+- Empty state: "No active alerts — classification looks stable"
+- Breadcrumb: Overview > Alerts
+
+---
+
+### 6 — Phishing / Spam Detection
+
+#### [NEW] `backend/app/services/email_safety.py`
+- Signal extraction (no external fetching):
+  - Sender/reply-to domain mismatch
+  - Deceptive URLs (display host ≠ actual host)
+  - Credential/payment request keywords
+  - Suspicious attachment types (.exe, .js, .scr etc.)
+  - Gmail spam label (if available from import)
+- Output: `risk_state` = `clear|suspected_phishing|spam|insufficient_evidence`
+- HTML sanitisation before any AI processing
+- High-risk → safety queue; authorised reviewer releases with reason
+
+#### [MODIFY] `backend/app/api/classify.py`
+- After classification, run `email_safety.assess(email)` and store `risk_state`
+- High-risk emails are gated from automatic downstream AI processing
+
+#### [MODIFY] `frontend/app/(workspace)/inbox/page.tsx`
+- Show risk badge (Spam / Suspected Phishing / Clear) on email rows
+- Filter by risk state
+
+---
+
+### 7 — Landing Page & Marketing Routes
+
+#### [NEW] `frontend/app/(marketing)/layout.tsx`
+- Public nav: DraftWise wordmark, links (Workflow, Pricing, Privacy, Terms), "Try Demo" CTA button, "Sign in" link
+- Footer: copyright, Privacy, Terms, GitHub (if public)
+- No sidebar, no session dependency
+
+#### [NEW] `frontend/app/(marketing)/page.tsx` — Landing
+- **Hero**: product name, slogan, single CTA "Try the demo", secondary "Connect your inbox"
+  - NO gradient text, NO emoji titles
+  - Image placeholder: `[Workflow diagram — shipping document enters comparison, mismatches highlighted, correction drafted]`
+- **How it works** section: 4-step numbered list with short prose, NOT a 3-icon row
+  - Step 1: Email arrives or is imported
+  - Step 2: Documents extracted and seven fields compared
+  - Step 3: Mismatches highlighted with source evidence
+  - Step 4: Supported correction drafted; returned draft re-checked
+- **Feature boundaries**: honest list of what's in demo, what requires sign-in
+- **Pricing teaser**: Free demo, Pilot (contact us)
+- **Footer CTA**: "Ready to try it?" + demo button
+
+#### [NEW] `frontend/app/(marketing)/workflow/page.tsx`
+- Text alternative to the visual diagram; step-by-step with field names
+
+#### [NEW] `frontend/app/(marketing)/pricing/page.tsx`
+- Free demo (sample inbox, no account)
+- Pilot access: contact us form link
+- Honest usage limits; no invented paid tiers
+
+#### [NEW] `frontend/app/(marketing)/privacy/page.tsx`
+- Data categories, Gmail scope, AI subprocessors (Gemini/Morpheus), retention, deletion, contact
+- Effective date placeholder; note this is not a completed legal review
+
+#### [NEW] `frontend/app/(marketing)/terms/page.tsx`
+- Operator, service limitations, acceptable use, account responsibilities
+- Template language with placeholders for legal review
+
+---
+
+### 8 — UI/UX Improvements
+
+#### Design System (globals.css)
+- Font: **Source Sans 3** (Google Fonts) — body and headings
+- Colors: `--ink-900 #0f1a1e`, `--ink-600 #3d5a65`, `--teal-700 #0f766e`, `--surface #f8fafb`, `--border #dde3e8`
+- Spacing: 4px base unit
+- No purple, no gradient text, no glassmorphism
+- Cards: `border: 1px solid var(--border); background: white; border-radius: 10px` — no colorful left borders
+- Buttons: solid teal primary, ghost secondary — no hover-fade reveal pattern
+
+#### Feature Explanations
+- Every page section gets a one-sentence description in `<p class="page-description">` beneath the `<h1>`
+- Empty states: purposeful, linked to the next action
+- Loading: `role="status"` skeletons (no spinner everywhere)
+
+#### Accessibility
+- Skip-to-content link (already exists, keep it)
+- All interactive elements have unique IDs and labels
+- Focus ring: 2px teal outline
+- Reduced-motion media query (already exists)
+
+---
+
+### 9 — Technical / SEO
+
+#### [MODIFY] `frontend/app/layout.tsx`
+- Import Source Sans 3 from Google Fonts `next/font/google`
+- Add JSON-LD: `Organization` + `SoftwareApplication`
+- Canonical tag from `SITE_URL` env var
+- `og:image` pointing to `/opengraph-image.png`
+
+#### [NEW] `frontend/app/sitemap.ts`
+- Public canonical routes only: `/`, `/workflow`, `/pricing`, `/privacy`, `/terms`
+- Excludes `/demo`, `/dashboard`, `/inbox`, `/cases/*`, `/sign-in`, `/auth/*`, `/alerts`, `/review`
+
+#### [NEW] `frontend/app/robots.ts`
+- Allow: public routes
+- Disallow: `/api/`, `/demo`, `/dashboard`, `/inbox`, `/cases`, `/review`, `/alerts`, `/settings`, `/auth`
+- Sitemap URL
+
+#### [NEW] `frontend/public/llms.txt`
+- Product name, slogan, public capability boundaries, public route links, known limitations
+
+#### [NEW] `frontend/app/not-found.tsx`
+- DraftWise branded 404: helpful message, links to Landing, Demo, Sign-in
+- Returns `404` status (Next.js default for `not-found.tsx`)
+
+#### [MODIFY] `frontend/next.config.ts`
+- `productionBrowserSourceMaps: false`
+- Bundle analyser setup (optional, dev only)
+- Image domains for OG
+
+#### [NEW] `frontend/app/icon.svg`
+- SVG favicon: the document-comparison mark
+
+#### Per-page metadata
+- Every route file gets `export const metadata: Metadata = { title, description, robots, alternates: { canonical } }`
+- Workspace routes: `robots: { index: false }`, generic titles without shipment data
+
+#### Structured Data
+- Root layout: `Organization` + `WebSite` + `SoftwareApplication`
+- Note: `LocalBusiness` not applicable (no physical address) — recorded as "not applicable"
+
+#### Breadcrumb component
+- `BreadcrumbList` JSON-LD on marketing hierarchical pages
+- Visual breadcrumbs with keyboard nav on workspace pages
+
+---
+
+### 10 — Email Classification & WSD
+
+#### [MODIFY] `backend/app/ai/`
+- Improve classification prompt with explicit five-class definitions and examples
+- Add word-sense disambiguation logic for each of the seven fields:
+  - **Port of loading vs. discharge**: detect by document section label and directional prepositions
+  - **Gross vs. net weight**: detect unit labels and "gross"/"net" qualifiers
+  - **Consignee vs. notify party**: detect "Notify" label vs. "Consignee" label in BL sections
+  - **Container count vs. package count**: detect "x20'" / "FCL" vs. "cartons"/"pkgs"
+  - **SI vs. BL role**: use document role from filename + structural analysis
+
+#### [MODIFY] `backend/app/services/`
+- Current-message vs. quoted-history separation (already partially implemented; complete it)
+- Evidence span extraction from email body (not just attachments)
+- Conservative uncertainty: unresolved sense → `needs_review` state, never auto-matched
+
+#### [NEW] `backend/app/services/disambiguation.py`
+- `disambiguate_field(field, candidate_values, context_spans, document_role)` → `{sense, confidence, rationale, span}`
+- Testable: minimal pair fixtures for each ambiguous field
+
+---
+
+### 11 — PDF Use Case Requirements
+
+From reading `Shipping Document Verification Use Case.pdf` and the traceability doc:
+
+| Requirement | Status | Action |
+|---|---|---|
+| 5 email categories (BL_COMPARISON, SI_REQUEST, INVOICE_QUERY, GENERAL, SPAM) | Existing | Verify labels in classification output |
+| 7-field comparison (shipper, consignee, notify_party, POL, POD, container_count, gross_weight_kg) | Existing | Ensure WSD applied to each |
+| Source grounding — every field cites attachment/body span | Existing | Add body-span extraction |
+| Human correction with audit trail | Existing (partial) | Complete review endpoint |
+| Returned-draft regression check | Existing | Verify UI exposes it |
+| Phishing/spam flagging | NEW | Implemented in P5 above |
+| Concept drift escalation | NEW | Implemented in P5 above |
+| Export for organizer evaluation | Existing (CLI) | Verify export format |
+
+#### [MODIFY] `backend/app/api/extract.py`
+- Accept email body as extraction source (currently attachment-only)
+- Return evidence spans with byte offsets and source type (`body|attachment`)
+
+---
+
+### 12 — Final UI/UX Fixes
+
+#### Sign-in Page Redesign
+#### [NEW] `frontend/app/sign-in/page.tsx`
+- Replaces the inline sign-in form in `app-shell.tsx`
+- Clean, centered layout with DraftWise wordmark
+- Magic-link (OTP) sign-in form
+- "Try demo instead" link
+- No gradient hero, no emoji
+
+#### Review Queue Page
+#### [NEW] `frontend/app/(workspace)/review/page.tsx`
+- Cases in `needs_decision` state with evidence panel
+- Reviewer can confirm/correct field values with source citations
+- Audit: actor + timestamp recorded
+
+#### [MODIFY] `frontend/components/cases/case-workspace.tsx`
+- Add feature explanation tooltip/popover for each section
+- Evidence viewer: open original page/table beside field without losing place
+- Source-correction flow connected to `/api/v1/review` endpoints
+
+---
+
+## Verification Plan
+
+### Automated Tests
+```bash
+# Backend
+cd backend && uv run pytest
+
+# Frontend type-check
+cd frontend && pnpm typecheck
+
+# Frontend E2E (requires running API + demo dataset)
+cd frontend && pnpm test:e2e
+```
+
+### Manual Verification
+1. Open `http://localhost:3000` — landing page renders, no gradient text, no emoji titles
+2. Click "Try the demo" → `/demo` → "Start demo" → `/dashboard` — fully populated, all nav items accessible
+3. Dashboard widgets show counts; "What needs attention" queue links to cases
+4. Open a case → see 7 fields with evidence; review panel available
+5. Inbox → "Fetch from Gmail" shows simulated fetch in demo mode
+6. Click "Ask DraftWise" → assistant panel opens; ask "What needs my attention?" → cited answer
+7. `/alerts` → shows drift alert status (placeholder data in demo)
+8. Landing → Workflow → Pricing → Privacy → Terms — all public routes work without sign-in
+9. `/not-found` → branded 404 page
+10. Check `view-source` of landing page for JSON-LD structured data and canonical tag
+11. `/sitemap.xml` and `/robots.txt` return correct content
+12. Run Lighthouse on `/` — no console errors, accessible landmarks
+
+---
+
+## Delivery Notes
+
+- **Source maps**: disabled in production (`productionBrowserSourceMaps: false`)
+- **Font subsetting**: Google Fonts served via `next/font` (only used glyphs loaded)
+- **Bundle**: workspace pages are code-split; assistant panel lazy-loaded
+- **Image placeholders**: styled `<figure>` elements with `role="img"` and `aria-label` — no broken `<img>` tags
+- **Legal pages**: clearly marked "Template — not a completed legal review"
+- **Demo data**: bundle accessed read-only; no answer-key exposure

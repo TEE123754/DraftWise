@@ -1,0 +1,44 @@
+[project]
+name = "shipping-amendment-workspace"
+version = "0.1.0"
+description = "Evidence-grounded shipping document verification and amendment workflow"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn[standard]>=0.34,<1",
+  "pydantic>=2.10,<3", "pydantic-settings>=2.7,<3",
+  "httpx>=0.28,<1", "google-genai>=1,<2", "rapidfuzz>=3.12,<4",
+  "pdfplumber>=0.11,<1", "pypdf>=5,<7", "pypdfium2>=4.30,<6",
+  "python-docx>=1.1,<2", "openpyxl>=3.1,<4", "pytesseract>=0.3.13,<1",
+  "pillow>=11,<13", "pyjwt[crypto]>=2.10,<3", "psycopg[binary,pool]>=3.2,<4",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3,<10", "pytest-asyncio>=0.25,<2", "jsonschema>=4.23,<5", "ruff>=0.9,<1"]
+
+[project.scripts]
+shipping-verify = "app.cli:main"
+shipping-api = "app.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+addopts = "--basetemp=tmp_pytest -o cache_dir=tmp_pytest/.cache"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Standalone scripts adjust sys.path and load .env before importing the app package.
+"scripts/*.py" = ["E402"]

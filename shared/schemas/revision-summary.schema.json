@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sdoc:revision-summary:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "baseline_version",
+    "si_extraction_id",
+    "previous_bl_id",
+    "new_bl_id",
+    "policy_version",
+    "fields"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "baseline_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "si_extraction_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "previous_bl_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "new_bl_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "policy_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "change",
+          "previous_decision",
+          "current_decision"
+        ],
+        "properties": {
+          "field": {
+            "enum": [
+              "shipper",
+              "consignee",
+              "notify_party",
+              "port_of_loading",
+              "port_of_discharge",
+              "container_count",
+              "gross_weight_kg"
+            ]
+          },
+          "change": {
+            "enum": [
+              "fixed",
+              "unchanged",
+              "new",
+              "regressed",
+              "unresolved",
+              "unchanged_match"
+            ]
+          },
+          "previous_decision": {
+            "enum": [
+              null,
+              "match",
+              "mismatch",
+              "missing",
+              "partial_match",
+              "uncertain"
+            ]
+          },
+          "current_decision": {
+            "enum": [
+              "match",
+              "mismatch",
+              "missing",
+              "partial_match",
+              "uncertain"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "id": "60000000-0000-4000-8000-000000000001",
+  "email_id": "email_example",
+  "revision": 1,
+  "status": "MISMATCH",
+  "complete": true,
+  "review_reasons": [],
+  "confidence": 0.94,
+  "comparisons": [
+    {
+      "field": "shipper",
+      "si": {
+        "raw": "Example Export Ltd",
+        "normalized": "example export ltd",
+        "extraction_id": "50000000-0000-4000-8000-000000000001"
+      },
+      "bl": {
+        "raw": "EXAMPLE EXPORT LTD",
+        "normalized": "example export ltd",
+        "extraction_id": "50000000-0000-4000-8000-000000000002"
+      },
+      "decision": "match",
+      "severity": "none",
+      "confidence": 0.98,
+      "rule": "identity_exact_v1",
+      "explanation": "Party identity matches after case normalization.",
+      "evidence_ids": [
+        "si:b1",
+        "bl:b1"
+      ]
+    },
+    {
+      "field": "consignee",
+      "si": {
+        "raw": "Example Import Ltd",
+        "normalized": "example import ltd",
+        "extraction_id": "50000000-0000-4000-8000-000000000001"
+      },
+      "bl": {
+        "raw": "Example Import Ltd",
+        "normalized": "example import ltd",
+        "extraction_id": "50000000-0000-4000-8000-000000000002"
+      },
+      "decision": "match",
+      "severity": "none",
+      "confidence": 0.98,
+      "rule": "identity_exact_v1",
+      "explanation": "Consignee identity matches.",
+      "evidence_ids": [
+        "si:b2",
+        "bl:b2"
+      ]
+    },
+    {
+      "field": "notify_party",
+      "si": {
+        "raw": "Example Import Ltd",
+        "normalized": "example import ltd",
+        "extraction_id": "50000000-0000-4000-8000-000000000001"
+      },
+      "bl": {
+        "raw": "Example Import Ltd",
+        "normalized": "example import ltd",
+        "extraction_id": "50000000-0000-4000-8000-000000000002"
+      },
+      "decision": "match",
+      "severity": "none",
+      "confidence": 0.97,
+      "rule": "identity_exact_v1",
+      "explanation": "Notify party identity matches.",
+      "evidence_ids": [
+        "si:b3",
+        "bl:b3"
+      ]
+    },
+    {
+      "field": "port_of_loading",
+      "si": {
+        "raw": "Port Klang, Malaysia",
+        "normalized": "MYPKG",
+        "extraction_id": "50000000-0000-4000-8000-000000000001"
+      },
+      "bl": {
+        "raw": "MYPKG",
+        "normalized": "MYPKG",
+        "extraction_id": "50000000-0000-4000-8000-000000000002"
+      },
+      "decision": "match",
+      "severity": "none",
+      "confidence": 0.96,
+      "rule": "approved_port_alias_v1",
+      "explanation": "Both values resolve to the approved port code MYPKG.",
+      "evidence_ids": [
+        "si:b4",
+        "bl:b4"
+      ]
+    },
+    {
+      "field": "port_of_discharge",
+      "si": {
+        "raw": "Singapore",
+        "normalized": "SGSIN",
+        "extraction_id": "50000000-0000-4000-8000-000000000001"
+      },
+      "bl": {
+        "raw": "Singapore",
+        "normalized": "SGSIN",
+        "extraction_id": "50000000-0000-4000-8000-000000000002"
+      },
+      "decision": "match",
+      "severity": "none",
+      "confidence": 0.96,
+      "rule": "approved_port_alias_v1",
+      "explanation": "Discharge ports match.",
+      "evidence_ids": [
+        "si:b5",
+        "bl:b5"
+      ]
+    },
+    {
+      "field": "container_count",
+      "si": {
+        "raw": "3 x 40HC",
+        "normalized": 3,
+        "extraction_id": "50000000-0000-4000-8000-000000000001"
+      },
+      "bl": {
+        "raw": "4 x 40HC",
+        "normalized": 4,
+        "extraction_id": "50000000-0000-4000-8000-000000000002"
+      },
+      "decision": "mismatch",
+      "severity": "high",
+      "confidence": 0.94,
+      "rule": "integer_exact_v1",
+      "explanation": "Container count differs: SI 3; BL 4.",
+      "evidence_ids": [
+        "si:b6",
+        "bl:b6"
+      ]
+    },
+    {
+      "field": "gross_weight_kg",
+      "si": {
+        "raw": "22,000 KG",
+        "normalized": "22000",
+        "extraction_id": "50000000-0000-4000-8000-000000000001"
+      },
+      "bl": {
+        "raw": "22 MT",
+        "normalized": "22000",
+        "extraction_id": "50000000-0000-4000-8000-000000000002"
+      },
+      "decision": "match",
+      "severity": "none",
+      "confidence": 0.97,
+      "rule": "decimal_unit_exact_v1",
+      "explanation": "Both values equal 22000 kg after unit conversion.",
+      "evidence_ids": [
+        "si:b7",
+        "bl:b7"
+      ]
+    }
+  ]
+}

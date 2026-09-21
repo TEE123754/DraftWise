@@ -1,0 +1,29 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    env_file: ../backend/.env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    env_file: ../backend/.env
+    command: ["python", "-m", "app.workers.runner"]
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    depends_on:
+      - api

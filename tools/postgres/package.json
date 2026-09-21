@@ -1,0 +1,7 @@
+{
+  "name": "shipping-postgres-test-runtime",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node run-tests.mjs" },
+  "dependencies": { "embedded-postgres": "18.4.0-beta.17" }
+}

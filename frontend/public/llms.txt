@@ -1,0 +1,42 @@
+# DraftWise — llms.txt
+# This file provides curated information for language model crawlers.
+# It is informational only and does not guarantee search ranking or crawler behavior.
+
+## Product
+
+Name: DraftWise
+Slogan: Every draft checked. Every change explained.
+Description: DraftWise is a shipping document verification tool that compares draft bills of lading against original shipping instructions, surfaces mismatches with source evidence, and tracks corrections through every returned draft.
+
+## Public pages
+
+- Landing: https://draftwise.app/
+- Workflow explanation: https://draftwise.app/workflow
+- Pricing: https://draftwise.app/pricing
+- Privacy policy: https://draftwise.app/privacy
+- Terms of service: https://draftwise.app/terms
+- Demo (no sign-in): https://draftwise.app/demo
+
+## Capability boundaries (accurate as of September 2026)
+
+- Compares seven fields between shipping instructions and draft bills of lading: shipper, consignee, notify party, port of loading, port of discharge, container count, gross weight.
+- Classifies emails into five categories: BL_COMPARISON, SI_REQUEST, INVOICE_QUERY, GENERAL, SPAM.
+- Detects suspected phishing using static signal analysis (no external link fetching).
+- Monitors classification distribution for concept drift.
+- Provides a read-only workspace assistant that cites case and report data.
+- Demo workspace uses the provided sample dataset of 520 emails and 250 documents.
+- Extraction accuracy depends on document quality, format, and language.
+- Completed checks confirm document consistency — they do not authorize cargo release.
+- Does not claim 100% accuracy or verified operational savings.
+
+## Not included
+
+- Email sending or modification
+- Legal document review or authorization
+- Cargo release or shipping authorization
+- Real-time tracking or carrier integration
+- Personal data outside of the document verification workflow
+
+## Contact
+
+For enquiries: hello@draftwise.app (placeholder — confirm before public launch)

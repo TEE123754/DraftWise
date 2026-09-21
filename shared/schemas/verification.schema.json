@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sdoc:verification:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "email_id",
+    "revision",
+    "status",
+    "complete",
+    "review_reasons",
+    "confidence",
+    "comparisons"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "email_id": {
+      "type": "string"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "enum": [
+        "OK",
+        "MISMATCH",
+        "NEEDS_REVIEW",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "complete": {
+      "type": "boolean"
+    },
+    "review_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "comparisons": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "si",
+          "bl",
+          "decision",
+          "severity",
+          "confidence",
+          "rule",
+          "explanation",
+          "evidence_ids"
+        ],
+        "properties": {
+          "field": {
+            "enum": [
+              "shipper",
+              "consignee",
+              "notify_party",
+              "port_of_loading",
+              "port_of_discharge",
+              "container_count",
+              "gross_weight_kg"
+            ]
+          },
+          "si": {
+            "$ref": "#/$defs/value"
+          },
+          "bl": {
+            "$ref": "#/$defs/value"
+          },
+          "decision": {
+            "enum": [
+              "match",
+              "mismatch",
+              "missing",
+              "partial_match",
+              "uncertain"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "none",
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "rule": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "value": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw",
+        "normalized",
+        "extraction_id"
+      ],
+      "properties": {
+        "raw": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "normalized": {
+          "type": [
+            "string",
+            "integer",
+            "null"
+          ]
+        },
+        "extraction_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

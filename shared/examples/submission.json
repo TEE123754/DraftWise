@@ -1,0 +1,25 @@
+{
+  "email_example_a": {
+    "category": "BL_COMPARISON",
+    "status": "MISMATCH",
+    "review_reason": null,
+    "has_defect": true,
+    "defect_fields": [
+      "container_count"
+    ]
+  },
+  "email_example_b": {
+    "category": "BL_COMPARISON",
+    "status": "NEEDS_REVIEW",
+    "review_reason": "missing_attachment",
+    "has_defect": false,
+    "defect_fields": []
+  },
+  "email_example_c": {
+    "category": "INVOICE_QUERY",
+    "status": "OK",
+    "review_reason": null,
+    "has_defect": false,
+    "defect_fields": []
+  }
+}

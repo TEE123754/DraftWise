@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "category",
+      "status",
+      "review_reason",
+      "has_defect",
+      "defect_fields"
+    ],
+    "properties": {
+      "category": {
+        "enum": [
+          "BL_COMPARISON",
+          "SI_REQUEST",
+          "INVOICE_QUERY",
+          "GENERAL",
+          "SPAM"
+        ]
+      },
+      "status": {
+        "enum": [
+          "OK",
+          "MISMATCH",
+          "NEEDS_REVIEW"
+        ]
+      },
+      "review_reason": {
+        "enum": [
+          null,
+          "wrong_doc_type",
+          "missing_attachment",
+          "unreadable",
+          "missing_value"
+        ]
+      },
+      "has_defect": {
+        "type": "boolean"
+      },
+      "defect_fields": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "enum": [
+            "shipper",
+            "consignee",
+            "notify_party",
+            "port_of_loading",
+            "port_of_discharge",
+            "container_count",
+            "gross_weight_kg"
+          ]
+        }
+      }
+    }
+  }
+}

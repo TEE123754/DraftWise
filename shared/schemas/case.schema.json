@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sdoc:case:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "reference",
+    "version",
+    "readiness",
+    "latest_report_id",
+    "open_issue_count",
+    "next_action",
+    "confirmed_deadline",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "reference": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "readiness": {
+      "enum": [
+        "needs_source",
+        "checking",
+        "needs_decision",
+        "changes_required",
+        "awaiting_revision",
+        "checked",
+        "failed"
+      ]
+    },
+    "latest_report_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "open_issue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "next_action": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "confirmed_deadline": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

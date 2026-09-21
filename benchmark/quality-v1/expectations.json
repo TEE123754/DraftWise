@@ -1,0 +1,70 @@
+{
+  "version": "synthetic-development-v1",
+  "items": [
+    {
+      "id": "q01",
+      "category": "BL_COMPARISON",
+      "fields": {
+        "SI.shipper": "Example Exporter",
+        "SI.consignee": "Example Buyer",
+        "SI.notify_party": "Example Agent",
+        "SI.port_of_loading": "Singapore",
+        "SI.port_of_discharge": "Port Klang",
+        "SI.container_count": "2 x 40HC",
+        "SI.gross_weight_kg": "12000 KG",
+        "BL.shipper": "Example Exporter",
+        "BL.consignee": "Example Buyer",
+        "BL.notify_party": "Example Agent",
+        "BL.port_of_loading": "Singapore",
+        "BL.port_of_discharge": "Port Klang",
+        "BL.container_count": "2 x 40HC",
+        "BL.gross_weight_kg": "12000 KG"
+      },
+      "comparisons": {
+        "shipper": "match",
+        "consignee": "match",
+        "notify_party": "match",
+        "port_of_loading": "match",
+        "port_of_discharge": "match",
+        "container_count": "match",
+        "gross_weight_kg": "match"
+      }
+    },
+    {
+      "id": "q02",
+      "category": "SI_REQUEST"
+    },
+    {
+      "id": "q03",
+      "category": "INVOICE_QUERY"
+    },
+    {
+      "id": "q04",
+      "category": "GENERAL"
+    },
+    {
+      "id": "q05",
+      "category": "SPAM"
+    },
+    {
+      "id": "q06",
+      "category": "INVOICE_QUERY"
+    },
+    {
+      "id": "q07",
+      "category": "SI_REQUEST"
+    },
+    {
+      "id": "q08",
+      "category": "GENERAL"
+    },
+    {
+      "id": "q09",
+      "category": "GENERAL"
+    },
+    {
+      "id": "q10",
+      "category": "BL_COMPARISON"
+    }
+  ]
+}

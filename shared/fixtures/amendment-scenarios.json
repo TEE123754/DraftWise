@@ -1,0 +1,44 @@
+{
+  "purpose": "Independent synthetic acceptance scenarios; not organizer reference answers.",
+  "scenarios": [
+    {
+      "id": "fix-and-regress",
+      "old": {
+        "consignee": "mismatch",
+        "gross_weight_kg": "match"
+      },
+      "new": {
+        "consignee": "match",
+        "gross_weight_kg": "mismatch"
+      },
+      "expected": {
+        "consignee": "fixed",
+        "gross_weight_kg": "regressed"
+      }
+    },
+    {
+      "id": "unreadable-replacement",
+      "old": {
+        "gross_weight_kg": "mismatch"
+      },
+      "new": {
+        "gross_weight_kg": "unreadable"
+      },
+      "expected": {
+        "gross_weight_kg": "unresolved"
+      }
+    },
+    {
+      "id": "changed-reference",
+      "si_revision_before": 1,
+      "si_revision_after": 2,
+      "expected": "new_baseline_and_stale_previews"
+    },
+    {
+      "id": "stale-preview",
+      "preview_case_version": 3,
+      "current_case_version": 4,
+      "expected_http_status": 409
+    }
+  ]
+}

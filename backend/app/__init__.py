@@ -1,0 +1,1 @@
+"""Shipping amendment workspace application."""

@@ -1,0 +1,38 @@
+# Source materials and private local analysis are not application source.
+/tmp/
+/artifacts/
+/data_v2/
+/data/
+/sdoc-hackathon-bundle.zip
+/sdoc-hackathon-docker.zip
+/Shipping Document Verification Use Case.pdf
+/Averis x Monash Hackathon Rules and Regulations.docx
+**/ground_truth*.json
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules/
+**/.next/
+**/.next-test/
+**/.next-dev/
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/coverage/
+**/test-results/
+**/playwright-report/
+**/*.pyc
+**/*.log
+.DS_Store
+Thumbs.db
+/.cache/
+**/*.tsbuildinfo
+tools/postgres/data/
+**/*.egg-info/
+
+# Local caches and scratch output.
+/.pnpm-store/
+**/tmp_pytest/
+/backend/tmp/

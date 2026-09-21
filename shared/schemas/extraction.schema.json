@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sdoc:extraction:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "document_id",
+    "document_type",
+    "fields",
+    "warnings"
+  ],
+  "properties": {
+    "document_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "document_type": {
+      "enum": [
+        "SI",
+        "BL",
+        "INVOICE",
+        "PACKING_LIST",
+        "CERTIFICATE",
+        "UNKNOWN"
+      ]
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shipper",
+        "consignee",
+        "notify_party",
+        "port_of_loading",
+        "port_of_discharge",
+        "container_count",
+        "gross_weight_kg"
+      ],
+      "properties": {
+        "shipper": {
+          "$ref": "#/$defs/field"
+        },
+        "consignee": {
+          "$ref": "#/$defs/field"
+        },
+        "notify_party": {
+          "$ref": "#/$defs/field"
+        },
+        "port_of_loading": {
+          "$ref": "#/$defs/field"
+        },
+        "port_of_discharge": {
+          "$ref": "#/$defs/field"
+        },
+        "container_count": {
+          "$ref": "#/$defs/field"
+        },
+        "gross_weight_kg": {
+          "$ref": "#/$defs/field"
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 30
+    }
+  },
+  "$defs": {
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw_value",
+        "state",
+        "evidence",
+        "alternatives"
+      ],
+      "properties": {
+        "raw_value": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4000
+        },
+        "state": {
+          "enum": [
+            "present",
+            "missing",
+            "ambiguous",
+            "unreadable"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "block_id",
+              "quote"
+            ],
+            "properties": {
+              "block_id": {
+                "type": "string"
+              },
+              "quote": {
+                "type": "string",
+                "maxLength": 4000
+              }
+            }
+          }
+        },
+        "alternatives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 5
+        }
+      }
+    }
+  }
+}

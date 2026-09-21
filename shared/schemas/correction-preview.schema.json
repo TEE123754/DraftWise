@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sdoc:correction-preview:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "case_id",
+    "case_version",
+    "report_id",
+    "fingerprint",
+    "kind",
+    "changes",
+    "remaining_fields",
+    "remaining_blocker_count",
+    "expires_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "case_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "case_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "report_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "kind": {
+      "const": "simulation"
+    },
+    "changes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "current",
+          "required",
+          "evidence_ids"
+        ],
+        "properties": {
+          "field": {
+            "enum": [
+              "shipper",
+              "consignee",
+              "notify_party",
+              "port_of_loading",
+              "port_of_discharge",
+              "container_count",
+              "gross_weight_kg"
+            ]
+          },
+          "current": {
+            "type": [
+              "string",
+              "integer"
+            ]
+          },
+          "required": {
+            "type": [
+              "string",
+              "integer"
+            ]
+          },
+          "evidence_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "remaining_fields": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 7,
+      "items": {
+        "enum": [
+          "shipper",
+          "consignee",
+          "notify_party",
+          "port_of_loading",
+          "port_of_discharge",
+          "container_count",
+          "gross_weight_kg"
+        ]
+      }
+    },
+    "remaining_blocker_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 7
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+.git
+.cache
+tmp
+artifacts
+**/.env
+**/.env.*
+!**/.env.example
+**/.venv
+**/node_modules
+**/.next
+**/__pycache__
+**/test-results
+**/ground_truth*.json
+*.zip
+*.pdf
+*.docx

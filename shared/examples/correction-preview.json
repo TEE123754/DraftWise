@@ -1,0 +1,22 @@
+{
+  "id": "00000003-0000-4000-8000-000000000001",
+  "case_id": "00000001-0000-4000-8000-000000000001",
+  "case_version": 3,
+  "report_id": "00000002-0000-4000-8000-000000000001",
+  "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "kind": "simulation",
+  "changes": [
+    {
+      "field": "container_count",
+      "current": 4,
+      "required": 3,
+      "evidence_ids": [
+        "si:b6",
+        "bl:b6"
+      ]
+    }
+  ],
+  "remaining_fields": [],
+  "remaining_blocker_count": 0,
+  "expires_at": "2026-09-18T08:30:00Z"
+}
