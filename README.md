@@ -74,6 +74,7 @@ The project was built by **Team Commitment Issues** for the **Averis x Monash Ha
   - [5. Bounded, cached, budgeted AI calls](#5-bounded-cached-budgeted-ai-calls)
   - [6. Real, durable side-effects](#6-real-durable-side-effects)
 - [Core Features](#core-features)
+  - [Ask DraftWise chatbot](#ask-draftwise-chatbot)
 - [Signature Workflows](#signature-workflows)
 - [User Workflow](#user-workflow)
 - [System Architecture](#system-architecture)
@@ -155,7 +156,7 @@ Success means finding the right requests and the right discrepancies **without f
 - **All four required capabilities** — classify, extract, compare and ask for help — including the seven-field report and the *"No mismatch detected"* result, shown only when all seven fields are supported matches.
 - **All four advanced challenges** — PDF and Word tables, scanned pages with OCR, messy inputs (varied labels, misleading subjects, missing attachments) and human review with visible, retryable failures.
 - **Self-evaluation** — a reproducible offline runner that exports the agreed one-object-per-email submission and reads back the organizer's scoreboard. See [Benchmark & Validation Results](#benchmark--validation-results) for the score **and** its caveats.
-- **Beyond the brief** — the amendment cycle with regression detection, correction previews, spam and phishing holds, drift monitoring, a page-aware assistant, approved equivalence rules, a customisable dashboard, a simulated Gmail fetch of the whole 520-email sample in the demo, and Gmail import for real mailboxes as clearly labelled future development.
+- **Beyond the brief** — the amendment cycle with regression detection, correction previews, spam and phishing holds, drift monitoring, colour-coded inbox alerts, a page-aware chatbot, approved equivalence rules, a customisable dashboard, a simulated Gmail fetch of the whole 520-email sample in the demo, and Gmail import for real mailboxes as clearly labelled future development.
 
 ---
 
@@ -179,7 +180,7 @@ Success means finding the right requests and the right discrepancies **without f
 | 🛡️ | **Safety built in** | Suspicious mail is held for review before any document is processed; drift is monitored against a *reviewed* baseline; every workspace is isolated. | Explainable safety signals, alerts with source links, Row Level Security with tenant-isolation tests. |
 | 📊 | **Honest numbers** | We publish the organizer score **and** the weaker held-out result, with the caveats. You can reproduce both. | `scripts/benchmark.py` (offline by default) and the held-out evaluation; see [Benchmark & Validation Results](#benchmark--validation-results). |
 | ⚡ | **Try it in seconds** | No account, no install: open the hosted demo and work through real sample emails in an isolated sandbox. Or run the whole stack on localhost. | Demo sandbox sessions; [localhost quick start](#run-on-localhost-quick-start). |
-| ♿ | **Designed to be used** | Attention-first inbox, plain-language states with text chips (not colour alone), page-aware assistant, keyboard-accessible tooltips, mobile layouts. | axe accessibility checks in the Playwright suite; layouts verified at 390, 768 and 1440 px. |
+| ♿ | **Designed to be used** | Attention-first inbox, plain-language states with text chips (not colour alone), page-aware chatbot, keyboard-accessible tooltips, mobile layouts. | axe accessibility checks in the Playwright suite; layouts verified at 390, 768 and 1440 px. |
 
 ### How we are different
 
@@ -228,7 +229,9 @@ You get an **isolated sample workspace** holding the 520 provided emails and 250
 | Amendment cases, correction preview, returned-draft re-check | ✅ Working |
 | Spam and phishing alerts, safety holds | ✅ Working |
 | Concept drift monitoring | ✅ Working |
-| Ask DraftWise assistant, customisable dashboard | ✅ Working |
+| Colour-coded inbox alerts (red / yellow / green / grey rows, status filters with counts), search and bulk actions | ✅ Working |
+| Ask DraftWise chatbot (knows the open email or case, cites what it answers from) | ✅ Working |
+| Customisable dashboard, live reading progress | ✅ Working |
 | Trash, restore and delete | ✅ Working |
 | Review with AI | ⚠️ Available, but limited to a small allowance (below) |
 | Gmail | 🧪 **Simulated.** *Simulate Gmail fetch* fetches the whole supplied 520-email sample mailbox in one click (emails already in your workspace are reused, never duplicated); it does not connect to Google. Real Gmail is future development. |
@@ -594,7 +597,7 @@ The use case asks for a system that starts from an inbox, decides which emails n
 | **Technology integration** | Next.js ↔ FastAPI ↔ Supabase (Auth, Storage, PostgreSQL) ↔ Gemini / Morpheus, plus Tesseract OCR, all connected and deployed. |
 | **Engineering quality & robustness** | 251 backend unit tests, 77 PostgreSQL integration tests, 55 Playwright browser tests with axe accessibility checks, ruff, and a CI workflow on every push (see the Project Status note on the Linux fix). See [Benchmark & Validation Results](#benchmark--validation-results). |
 | **Solution effectiveness & value** | The amendment cycle: regression detection, exact-scope correction previews, one-question-at-a-time next actions. See [Signature Workflows](#signature-workflows). |
-| **User experience & differentiation** | Attention-first inbox, evidence viewer, explainable states, page-aware assistant, keyboard-accessible tooltips, mobile layouts verified at 390 / 768 / 1440 px. |
+| **User experience & differentiation** | Attention-first inbox, evidence viewer, colour-coded explainable states, page-aware chatbot, keyboard-accessible tooltips, mobile layouts verified at 390 / 768 / 1440 px. |
 | **Impact & future potential** | [docs/IMPACT_AND_ROLLOUT.md](docs/IMPACT_AND_ROLLOUT.md): eight success measures with definitions, data sources and pilot targets (targets, not results), a shadow-mode then assisted-mode rollout with go / no-go gates, and risks. Plus approved equivalence memory (scoped per customer), drift monitoring against a reviewed baseline, Gmail connection and workspace-level AI budgets. |
 
 ---
@@ -684,28 +687,53 @@ Nothing stops at a text summary. Each stage writes its output and enqueues the n
 
 ## Core Features
 
-| Feature | Description |
-|---|---|
-| Attention-first inbox | Every email carries a computed state, reason chips (`missing_si`, `awaiting_draft`, `wrong_doc_type`, `mismatch:<fields>` …), stable display IDs (`email_007`) and a concrete next action. |
-| Five-class email classification | Rules + AI classifier with quoted-history separation, negation and misleading-subject handling, and a bounded shipping-domain sense layer (SI, BL, POL, POD …). |
-| Multi-format document reading | TXT, PDF, DOCX and XLSX with page / cell / table locations; OCR for scanned and hybrid pages; hidden rows, columns and formulas handled explicitly. |
-| Seven-field verifier | Decimal-exact weights and unit conversion, container-count parsing (`2x20GP + 1x40HC`), UN/LOCODE-backed port aliases, party identity comparison that preserves qualifiers like `ON BEHALF OF`. |
-| Evidence viewer | Every extracted value links back to its exact source quote and location. |
-| Amendment cases | A case pins the SI, BL and policy versions and tracks issues across rounds. |
-| Regression detection | Old-vs-new comparison flags a field that was correct and now differs. |
-| Correction preview | Select confirmed issues → see *Current BL → Required by SI* and the forecast of remaining issues → copy an editable request. Nothing is sent automatically. |
-| Guided next action | One question at a time (*Which SI applies?*), ordered by dependency and number of unblocked checks, with an explicit *I cannot confirm* path. |
-| Approved equivalence rules | Field-specific, customer-scoped aliases with impact preview, supervisor approval and revocation. Numeric values, countries and identity qualifiers can never be overridden. |
-| Missing-document actions | Local reply templates and reference-code suggestions ("suggested link", never auto-link) for emails that lack an SI or BL. |
-| Spam & phishing review | Explainable signals, safety holds, alert investigation with source links, release / relabel / confirm-spam actions. |
-| Drift monitoring | Compares two disjoint windows against a *reviewed* baseline; shows "insufficient data" instead of inventing one. |
-| Page-aware assistant | Floating chat that knows which email or case is open, answers from authorised workspace data with citations, and uses rules before any AI. |
-| Customisable dashboard | Toggle and reorder panels, saved per workspace; every count drills down. |
-| Trash & retention | 30-day restorable Trash, retention purges, and durable Storage cleanup. |
-| No-login demo | Isolated, 8-hour sandbox workspace seeded from the supplied sample data, with capped capacity and a small AI allowance. See [Live Demo: How It Works and Its Limits](#live-demo-how-it-works-and-its-limits). |
-| Gmail | In the demo, **Simulate Gmail fetch** fetches the whole 520-email sample mailbox. For real users Gmail fetching is **future development**: connecting and syncing answer with a clear message instead of pretending (Google sign-in and encrypted token storage are built and switched off). |
-| Analytics | Organizer-scorer results, AI classifier accuracy panel, and AI usage against budget. |
-| Benchmark harness | Reproducible offline runner, schema-validated submission export, aggregate-only scoring. |
+| Feature | Description | Where |
+|---|---|---|
+| **Inbox and alerts** | | |
+| Attention-first inbox | Every email carries one computed state, reason chips (`missing_si`, `awaiting_draft`, `wrong_doc_type`, `mismatch:<fields>` …), stable display IDs (`email_007`) and a concrete next action. | Inbox |
+| **Colour-coded inbox alerts** | Each row has a coloured left border and tint: **red** for spam and held-for-safety, **yellow** for needs documents, waiting for draft, needs review and mismatch found, **green** for checked (light green when no check is needed) and **grey** while processing. Every colour also has an icon and a text chip, so colour is never the only signal. The status pills carry the same colours with live counts, so they double as the legend. See [Email Review States](#email-review-states). | Inbox |
+| Filters, search and paging | Filter by status pill, by type (five categories plus *unclassified*) or by *failed processing only*; search by subject, sender or ID (`email_007`). The view is kept in the URL, so a refresh or a shared link opens the same filter. Emails load 25 at a time. | Inbox |
+| Live reading progress | A progress banner shows how many emails have been read; the inbox refreshes itself every 8 seconds while anything is still processing, and rows change state as the worker finishes. | Overview, Inbox |
+| Email preview and bulk actions | Click a row to preview its documents, reasons and next action beside the list. *Select emails* reads several without AI, or moves them to Trash, in one go. | Inbox |
+| Add an email | Type in a shipment request and attach up to 20 documents (PDF, Word, Excel or text); it is classified, read and opened as a case. | Inbox |
+| Five-class email classification | Rules + AI classifier with quoted-history separation, negation and misleading-subject handling, and a bounded shipping-domain sense layer (SI, BL, POL, POD …). | Inbox, Analytics |
+| Spam & phishing review | Explainable signals, safety holds, alert investigation with source links, release / relabel / confirm-spam actions. | Inbox, Alerts |
+| Missing-document actions | Local reply templates and reference-code suggestions ("suggested link", never auto-link) for emails that lack an SI or BL. | Inbox, email page |
+| **Reading and checking** | | |
+| Multi-format document reading | TXT, PDF, DOCX and XLSX with page / cell / table locations; OCR for scanned and hybrid pages; hidden rows, columns and formulas handled explicitly. | Case |
+| Seven-field verifier | Decimal-exact weights and unit conversion, container-count parsing (`2x20GP + 1x40HC`), UN/LOCODE-backed port aliases, party identity comparison that preserves qualifiers like `ON BEHALF OF`. | Case |
+| Evidence viewer | Every extracted value links back to its exact source quote and location. | Case |
+| Human review queue | Values that are unreadable, missing or uncertain wait for a person, who confirms or corrects them; a correction writes an immutable revision and recomputes the report. | Review |
+| **Amendments** | | |
+| Amendment cases | A case pins the SI, BL and policy versions and tracks issues across rounds. Open and completed cases have their own queues. | Cases, Completed |
+| Regression detection | Old-vs-new comparison flags a field that was correct and now differs. | Case |
+| Correction preview | Select confirmed issues → see *Current BL → Required by SI* and the forecast of remaining issues → copy an editable request. Nothing is sent automatically. | Case |
+| Guided next action | One question at a time (*Which SI applies?*), ordered by dependency and number of unblocked checks, with an explicit *I cannot confirm* path. | Case |
+| Approved equivalence rules | Field-specific, customer-scoped aliases with impact preview, supervisor approval and revocation. Numeric values, countries and identity qualifiers can never be overridden. | Rules |
+| **Monitoring and help** | | |
+| **Ask DraftWise chatbot** | A floating chatbot that knows which email or case is open, answers from your workspace data with clickable citations, and uses rules before any AI. See [Ask DraftWise chatbot](#ask-draftwise-chatbot). | Every signed-in page (bottom-right) |
+| Drift monitoring | Compares two disjoint windows against a *reviewed* baseline; shows "insufficient data" instead of inventing one. | Alerts |
+| Customisable dashboard | Toggle and reorder panels (arrows or drag), saved per workspace; every count drills down to the emails behind it. | Overview |
+| Analytics | Organizer-scorer results, AI classifier accuracy panel, and AI usage against budget. | Analytics |
+| **Workspace and access** | | |
+| Trash & retention | 30-day restorable Trash, retention purges, and durable Storage cleanup. | Trash |
+| Workspaces and roles | Every workspace is isolated by Row Level Security. Viewers can look but not act; operators, reviewers and admins can act; only reviewers and admins approve rules. | Everywhere |
+| Accessible by design | Text chips beside every colour, keyboard-accessible tooltips, focus-trapped dialogs that close with `Esc`, mobile layouts checked at 390, 768 and 1440 px. | Everywhere |
+| **Trying it and proving it** | | |
+| No-login demo | Isolated, 8-hour sandbox workspace seeded from the supplied sample data, with capped capacity and a small AI allowance. See [Live Demo: How It Works and Its Limits](#live-demo-how-it-works-and-its-limits). | `/demo` |
+| Gmail | In the demo, **Simulate Gmail fetch** fetches the whole 520-email sample mailbox. For real users Gmail fetching is **future development**: connecting and syncing answer with a clear message instead of pretending (Google sign-in and encrypted token storage are built and switched off). | Inbox, Settings → Connections |
+| Benchmark harness | Reproducible offline runner, schema-validated submission export, aggregate-only scoring. | `scripts/benchmark.py` |
+| Product site | Landing page, workflow explainer, pricing, privacy and terms pages. | `/`, `/workflow` |
+
+### Ask DraftWise chatbot
+
+The round chatbot button at the bottom-right of every signed-in page opens **Ask DraftWise**, a small chat window for quick questions about your own workspace.
+
+- **It knows where you are.** With an email or case open, *"What should I do with this email?"* explains that item's state, the reasons and the next step. Elsewhere, ready-made questions cover *What needs my attention?*, *Which emails are missing documents?*, *Which drafts are waiting for a revision?* and *Are there any drift alerts?*
+- **Answers come from your data.** Each answer is built from the workspace's own emails and cases and links to the ones it mentions. It cannot change anything, send anything or invent a citation.
+- **Rules first, AI only to pick a route.** Common questions are matched by keyword at no cost. Only a question the rules do not recognise goes to AI, and then the AI can only choose one of the fixed read-only answers; that call is cached and counted against the daily AI budget. With AI off, or on a question outside those answers, the chatbot says it has no evidence rather than guessing.
+- **Accessible.** Keyboard focus stays inside the window, `Esc` closes it, and new replies are announced to screen readers.
+- **Not a general-purpose chatbot.** It does not answer open-ended questions, and it is **not** part of the benchmark score. Its API is `POST /api/v1/chat` ([details](#assistant-demo-and-gmail)); its tests are `backend/tests/integration/test_assistant_pages.py`, `test_assistant_limits.py` and `frontend/tests/assistant-context.spec.ts`.
 
 ---
 
@@ -804,7 +832,7 @@ flowchart TD
 | 11 | **Close it out.** | When all seven fields are supported matches the case shows **Checked** and moves to Completed. | `/completed` |
 | 12 | **Housekeeping.** | Alerts (spam, phishing, drift), Rules (approved equivalences), Analytics (accuracy), Trash (30-day restore), connections. | `/alerts`, `/rules`, `/analytics`, `/trash`, `/settings/connections` |
 
-At any point, the **assistant** (bottom-right) can answer *"what needs my attention?"* or, while an email or case is open, *"what should I do here?"* — from your workspace's own data, citing cases.
+At any point, the **chatbot** (bottom-right) can answer *"what needs my attention?"* or, while an email or case is open, *"what should I do here?"* — from your workspace's own data, citing cases.
 
 ### The six-step review workflow on every email
 
