@@ -3,6 +3,7 @@ import { AuthProvider } from "@/components/auth-provider";
 import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 import "./document-design.css";
+import "./workspace-polish.css";
 
 const siteUrl = process.env.SITE_URL || "http://localhost:3000";
 

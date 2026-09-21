@@ -1,5 +1,32 @@
 # DraftWise implementation plan
 
+## Cross-page UI fixes (2026-09-21)
+
+- [x] ~~Unify the dashboard sign-in gate and sign-in page with a responsive branded access layout.~~
+- [x] ~~Compact mobile workspace navigation; constrain grid widths and wrap long email references.~~
+- [x] ~~Correct Rules/Analytics text contrast and 404 landmarks/contrast.~~
+- [x] ~~Verify 21 public/workspace page states at 390, 768 and 1440px, including case and email detail.~~
+- [x] ~~Check mocked sign-in failure/success, existing browser regressions, and production build.~~
+
+Details and scope: [UI verification](docs/UI_VERIFICATION.md).
+
+
+## Marketing reference refinement (2026-09-21)
+
+- [x] ~~Remove the carrier section and rules-first / optional-AI promotional text.~~
+- [x] ~~Compact the layout to the supplied reference, with a cohesive robot/ship illustration and floating review cards.~~
+- [x] ~~Align landing-page and metadata claims with SI/BL comparison, seven fields, source evidence, follow-ups and spam/phishing review. Remove generic social links and unsupported speed/forwarding claims.~~
+- [x] ~~Production build and five browser checks passed; mobile, keyboard, reduced motion, routes and axe accessibility verified.~~
+
+## Marketing Version B (2026-09-21)
+
+- [x] ~~Glass marketing layout, existing brand assets, generated maritime hero, native parallax/tilt, four-step workflow and feature cards.~~
+- [x] ~~Responsive navigation, keyboard tooltips, reduced-motion support, production build and browser verification.~~
+- [ ] Add verified contact/social destinations if supplied.
+
+Details, honest copy adjustments and generation prompt: [Marketing Version B](docs/MARKETING_VERSION_B.md). Existing application logic and APIs were not changed.
+
+
 ## Inbox and workflow plan (2026-09-21)
 
 Audit of the inbox, workflow, alerts and dashboard feedback, with a phased plan: [Inbox and workflow plan](docs/INBOX_AND_WORKFLOW_PLAN.md). Progress: **P1–P10 are implemented**; the final checkpoint at the end of that document records what was measured and what was not verified (no live AI provider call, no real Supabase Storage deletion). The MISMATCH-report database constraint bug was fixed with migration 012 (applied to the development database).

@@ -11,6 +11,7 @@ import { WordMark } from "@/components/brand/wordmark";
 import { getSupabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { post } from "@/lib/api/client";
+import { AuthFrame } from "@/components/auth-frame";
 
 const MARKETING_PATHS = ["/", "/workflow", "/pricing", "/privacy", "/terms"];
 const DEMO_STANDALONE = ["/demo", "/sign-in", "/auth"];
@@ -61,18 +62,19 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   if (!auth.ready)
     return (
-      <main className="auth-gate">
+      <AuthFrame>
         <p role="status">Restoring your workspace…</p>
-      </main>
+      </AuthFrame>
     );
   if (!isWorkspace)
     return (
-      <main className="auth-gate">
+      <AuthFrame>
+        <p className="auth-kicker">WELCOME TO DRAFTWISE</p>
         <h1>Open your workspace</h1>
-        <p>{auth.error || "Sign in or start a no-account demo to continue."}</p>
-        <Link href="/sign-in">Sign in</Link>
-        <Link href="/demo">Try the demo</Link>
-      </main>
+        <p className="auth-description">{auth.error || "Sign in to review your shipping emails and document checks, or explore a sample workspace."}</p>
+        <div className="auth-access-actions"><Button asChild className="w-full"><Link href="/sign-in">Sign in</Link></Button><Button asChild variant="secondary" className="w-full"><Link href="/demo">Try the demo</Link></Button></div>
+        <p className="auth-legal">The demo uses prepared shipment samples. No account required.</p>
+      </AuthFrame>
     );
 
   return (
@@ -81,7 +83,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       style={{
         minHeight: "100vh",
         display: "grid",
-        gridTemplateColumns: `${240}px 1fr`,
+        gridTemplateColumns: "240px minmax(0, 1fr)",
       }}
     >
       <a href="#main-content" className="skip-link">

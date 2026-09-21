@@ -48,17 +48,25 @@ export default function SignInForm() {
         role="status"
       >
         <strong>Check your email.</strong> We sent a sign-in link to{" "}
-        <strong>{email}</strong>. The link expires in 10 minutes.
+        <strong>{email}</strong>. Use the link to return to your workspace.
       </div>
     );
   }
 
   return (
-    <form onSubmit={signIn} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <form
+      onSubmit={signIn}
+      style={{ display: "flex", flexDirection: "column", gap: 16 }}
+    >
       <div>
         <label
           htmlFor="signin-email"
-          style={{ display: "block", fontSize: 14, fontWeight: 500, marginBottom: 6 }}
+          style={{
+            display: "block",
+            fontSize: 14,
+            fontWeight: 500,
+            marginBottom: 6,
+          }}
         >
           Work email
         </label>

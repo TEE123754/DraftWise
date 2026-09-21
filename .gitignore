@@ -8,9 +8,30 @@
 /Shipping Document Verification Use Case.pdf
 /Averis x Monash Hackathon Rules and Regulations.docx
 **/ground_truth*.json
+# Environment and secrets
 **/.env
 **/.env.*
+**/*.env
+**/*.env.*
 !**/.env.example
+**/*.key
+**/*.pem
+**/*.cert
+**/*.crt
+**/*.pfx
+**/*.p12
+**/*.token
+**/*credentials*.json
+**/*client_secret*.json
+**/*service_account*.json
+**/id_rsa*
+**/id_ed25519*
+
+# Local databases and dumps
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+**/*.dump
 **/node_modules/
 **/.next/
 **/.next-test/

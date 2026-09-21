@@ -226,14 +226,14 @@ export default function AnalyticsPage() {
                 <p className="text-2xl font-bold text-slate-900">
                   {(data.official.scoreboard.stage1.accuracy * 100).toFixed(1)}%
                 </p>
-                <p className="text-xs text-slate-400">From organizer scoring server</p>
+                <p className="text-xs text-slate-600">From organizer scoring server</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500 mb-1">Agreement with own report</p>
                 <p className="text-2xl font-bold text-brand-800">
                   {(data.overall.accuracy * 100).toFixed(2)}%
                 </p>
-                <p className="text-xs text-slate-400">Agreement with the project&apos;s own report</p>
+                <p className="text-xs text-slate-600">Agreement with the project&apos;s own report</p>
               </div>
             </div>
           </div>

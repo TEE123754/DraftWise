@@ -323,7 +323,7 @@ export default function RulesPage() {
         ) : !rules.length ? (
           <div className="p-12 text-center">
             <p className="text-sm font-medium text-slate-600">No equivalence rules found in this view.</p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-600">
               Create a rule above to link known entity names or port abbreviations.
             </p>
           </div>

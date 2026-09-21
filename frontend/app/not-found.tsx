@@ -3,7 +3,7 @@ import { WordMark } from "@/components/brand/wordmark";
 
 export default function NotFound() {
   return (
-    <div
+    <main
       style={{
         minHeight: "100vh",
         background: "var(--surface)",
@@ -23,7 +23,7 @@ export default function NotFound() {
         style={{
           fontSize: 80,
           fontWeight: 700,
-          color: "var(--border)",
+          color: "var(--ink-600)",
           lineHeight: 1,
           fontVariantNumeric: "tabular-nums",
         }}
@@ -101,6 +101,6 @@ export default function NotFound() {
           Open workspace
         </Link>
       </div>
-    </div>
+    </main>
   );
 }
