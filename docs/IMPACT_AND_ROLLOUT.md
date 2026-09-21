@@ -15,7 +15,7 @@ Documentation and operations teams at freight forwarders, NVOCCs and exporters w
 | Unsupported "all clear" | None: an exhaustive invariant test forbids a green result unless all seven fields matched | Backend unit tests | Covers the seven fields only |
 | Email classification without a model | 48 % on 60 independent emails, 0 confidently wrong (abstains) | Held-out set | Small set; fixes were later derived from its failures |
 | Email classification with the model | 95 % on the same 60 | Held-out set | Small set; live provider quality run still open |
-| Processing cost | 520 emails in 6.7 s, zero provider calls, on rules alone | `scripts/benchmark.py` | Local run, no network model calls |
+| Processing cost | 520 emails in 4.4 s, zero provider calls, on rules alone | `scripts/benchmark.py` | Local run, no network model calls |
 | Reviewer time saved | **Not measured** | | A hypothesis; see the pilot below |
 
 ## Success measures for a pilot

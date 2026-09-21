@@ -66,11 +66,15 @@ In Railway -> **Variables**, add the following environment variables:
 | `AI_PROVIDER` | `gemini` (or `morpheus`) |
 | `ALLOWED_ORIGINS` | `https://<your-app>.vercel.app` *(must be HTTPS in production)* |
 | `RUN_WORKER` | `true` is the image default and needs no action: the container runs the API and a supervised worker. Set `false` only if the worker runs as its own service. |
-| `WORKER_CONCURRENCY` | *(optional)* Jobs one worker runs at once, 1 to 8, default 3. Each uses about two database connections. |
+| `WORKER_CONCURRENCY` | *(optional)* Jobs one worker runs at once, 1 to 8. The image sets 4. Each slot uses about two database connections and the Supabase database allows 60, so raise it with that budget in mind. |
+| `WORKER_KIND` | *(optional)* `hosted` or `local`. Detected automatically on Railway; only set it to override. `/ready` reports workers by this value and answers 503 for a deployed API with no hosted worker. |
 | `DEMO_ENABLED` | `true` |
 | `DEMO_MAX_SESSIONS` | `60` *(optional)* Demo sessions that may be alive at once. Each lasts 8 hours and holds its own copy of the sample data, so raise it only as far as your database storage allows. At the limit, new visitors see "Demo capacity reached". |
 | `DEMO_MAX_SESSIONS_PER_HOUR` | `60` *(optional)* Demo sessions that may be started in one hour. |
 | `FREE_ONLY` | `true` |
+
+> [!IMPORTANT]
+> **Apply database migrations before deploying new code.** Run `python scripts/check_migrations.py` against the production database and apply every file it reports as missing (currently up to `017_worker_source_and_job_priority.sql`, which adds `worker_heartbeats.kind` and `processing_jobs.priority`). The migrations are additive, so running them first is safe for the code that is still deployed.
 
 > [!IMPORTANT]
 > Railway's liveness check is configured in `railway.json` to hit `/health`, which responds `200 {"status":"ok","version":"pipeline-v1"}` immediately upon container startup.
