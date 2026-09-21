@@ -1,5 +1,4 @@
 import asyncio
-import sys
 from uuid import uuid4
 
 import httpx
@@ -35,9 +34,10 @@ def forbid_live_http(monkeypatch):
 
 @pytest.hookimpl(optionalhook=True)
 def pytest_asyncio_loop_factories(config, item):
-    if sys.platform == "win32":
-        return {"selector": asyncio.SelectorEventLoop}
-    return None
+    # psycopg's async driver cannot run on Windows' default Proactor loop. pytest-asyncio 1.4
+    # rejects a hook that returns nothing, so every platform gets the selector loop (on Linux and
+    # macOS `asyncio.SelectorEventLoop` is already the default loop class).
+    return {"selector": asyncio.SelectorEventLoop}
 
 
 @pytest.fixture
