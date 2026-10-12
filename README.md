@@ -1,6 +1,6 @@
 # DraftWise — Shipping Email & Document Verification Workspace
 
-**🚀 Live deployment: [https://draft-wise-gold.vercel.app/](https://draft-wise-gold.vercel.app/)** — open the [no-sign-up demo](https://draft-wise-gold.vercel.app/demo) straight away.
+**🚀 Live deployment: [https://draft-wise-gold.vercel.app/](https://draft-wise-gold.vercel.app/)** [Unavailable. Backend killed.] — open the [no-sign-up demo](https://draft-wise-gold.vercel.app/demo) straight away.
 
 **Event:** Averis x Monash Hackathon 2026  
 **Team:** Commitment Issues  
